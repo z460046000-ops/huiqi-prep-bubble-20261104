@@ -1,0 +1,172 @@
+/* 晴空玻璃：全站视觉层。只改外观，不动结构和交互。
+   地面是一层淡蓝青雾面，面板都是浮在上面的毛玻璃；每个智能体一个色调，首页卡片、标签、头像用同一套。 */
+:root{
+  --ag-ground:#edf3fb;
+  --ag-ink:#14233a;
+  --ag-text:#33465f;
+  --ag-muted:#5e6f87;
+  --ag-hair:rgba(24,60,120,.1);
+  --ag-glass:rgba(255,255,255,.58);
+  --ag-glass-strong:rgba(255,255,255,.8);
+  --ag-glass-edge:rgba(255,255,255,.78);
+  --ag-blur:saturate(150%) blur(22px);
+  --ag-shadow:0 1px 2px rgba(20,56,120,.05),0 14px 36px rgba(20,56,120,.08);
+  --ag-match:linear-gradient(145deg,#2f8ef5,#46c2ee);
+  --ag-match-ink:#1673d6;
+  --ag-assembly:linear-gradient(145deg,#2c55e6,#5f86f8);
+  --ag-assembly-ink:#2c55e6;
+  --ag-guidance:linear-gradient(145deg,#0f9a9e,#35c8b4);
+  --ag-guidance-ink:#0c8589;
+  --ag-noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .2 0 0 0 0 .4 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+  --ag-spark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24' fill='%23ffffff'%3E%3Cpath d='M10 4l1.9 5.6 5.6 1.9-5.6 1.9L10 19l-1.9-5.6-5.6-1.9 5.6-1.9L10 4Zm7.5 12l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z'/%3E%3C/svg%3E");
+}
+
+/* 地面 */
+html,body{background:var(--ag-ground)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--ag-noise),radial-gradient(52% 46% at 8% 4%,#d4e4ff 0,transparent 70%),radial-gradient(46% 42% at 92% 8%,#d2f0f8 0,transparent 72%),radial-gradient(60% 50% at 62% 104%,#dde6fb 0,transparent 72%),var(--ag-ground)}
+.main-shell,.app-shell,#main-content{background:transparent}
+
+/* 侧栏 */
+.sidebar{background:var(--ag-glass);-webkit-backdrop-filter:var(--ag-blur);backdrop-filter:var(--ag-blur);border-right:1px solid var(--ag-glass-edge);box-shadow:1px 0 0 var(--ag-hair)}
+.primary-nav a{border-radius:10px;transition:background .18s,color .18s}
+.primary-nav a:hover{background:rgba(255,255,255,.6)}
+.primary-nav a.is-active{background:rgba(255,255,255,.86);box-shadow:0 1px 2px rgba(20,56,120,.08),inset 0 0 0 1px var(--ag-glass-edge);color:#174faf}
+.recent-project{border-radius:8px}
+.recent-project:hover{background:rgba(255,255,255,.6)}
+.recent-project.is-active{background:rgba(255,255,255,.8);color:#174faf}
+.mobile-header{background:var(--ag-glass-strong);-webkit-backdrop-filter:var(--ag-blur);backdrop-filter:var(--ag-blur)}
+.demo-identity,#user-type{background:rgba(255,255,255,.6)}
+
+/* 按钮 */
+.button{transition:background .18s,box-shadow .18s,transform .12s}
+.button:active{transform:translateY(1px)}
+.button-primary{background:#1557e6;box-shadow:0 6px 16px rgba(21,87,230,.24)}
+.button-primary:hover{background:#0f49c8;box-shadow:0 8px 20px rgba(21,87,230,.3)}
+.button-secondary{background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px var(--ag-hair)}
+
+/* 首页：明亮的天空，步骤卡片压在渐变上 */
+.start-hero{min-height:clamp(420px,56vh,560px);padding-bottom:150px;background:var(--ag-noise),radial-gradient(44% 58% at 14% 4%,#4b9bff 0,transparent 72%),radial-gradient(40% 52% at 88% 2%,#2ecbe6 0,transparent 70%),radial-gradient(70% 62% at 50% 22%,#1658e4 0,transparent 78%),linear-gradient(180deg,#0f4ad2 0,#2a76f4 44%,#8fc0fc 72%,#dbe9fd 90%,transparent 100%)}
+.start-hero::before,.start-hero::after{display:none}
+.start-hero h1{font-size:clamp(32px,4cqw,50px);letter-spacing:-.01em;text-shadow:0 2px 24px rgba(8,40,130,.28)}
+.start-hero-form>p{color:#eaf3ff;font-size:16px;margin-bottom:34px}
+.start-hero-field{height:132px;border:1px solid rgba(255,255,255,.72);border-radius:22px;background:rgba(255,255,255,.7);-webkit-backdrop-filter:saturate(170%) blur(26px);backdrop-filter:saturate(170%) blur(26px);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 24px 60px rgba(8,44,140,.26)}
+.start-hero-field:focus-within{background:rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff,0 0 0 4px rgba(255,255,255,.34),0 24px 60px rgba(8,44,140,.3)}
+.start-hero-field input::placeholder{color:#50607a}
+.start-steps{position:relative;z-index:2;margin-top:-104px}
+#start-steps-heading{color:var(--ag-ink);letter-spacing:-.01em}
+.start-step-head{color:var(--ag-muted)}
+.start-step:nth-child(-n+3){--step:var(--ag-match);--step-ink:var(--ag-match-ink)}
+.start-step:nth-child(4){--step:var(--ag-assembly);--step-ink:var(--ag-assembly-ink)}
+.start-step:nth-child(5){--step:var(--ag-guidance);--step-ink:var(--ag-guidance-ink)}
+.start-step-number{color:var(--step-ink);font-family:"DIN Alternate","DIN Condensed",Bahnschrift,"Arial Narrow",sans-serif;font-size:20px}
+.start-step-arrow{color:rgba(60,90,140,.35)}
+.start-step-card{border:1px solid var(--ag-glass-edge);border-radius:18px;background:var(--ag-glass);-webkit-backdrop-filter:var(--ag-blur);backdrop-filter:var(--ag-blur);box-shadow:var(--ag-shadow);transition:box-shadow .22s,background .22s,transform .22s}
+.start-step-card:hover{border-color:#fff;background:rgba(255,255,255,.82);box-shadow:0 2px 4px rgba(20,56,120,.06),0 20px 44px rgba(20,56,120,.14);transform:translateY(-3px)}
+.start-step-icon{top:-26px;left:16px;width:56px;height:56px;border-radius:17px;background:var(--step);box-shadow:0 10px 22px rgba(20,70,170,.24),inset 0 1px 0 rgba(255,255,255,.45);color:#fff}
+.start-step-icon .icon{width:26px;height:26px;stroke-width:1.7}
+.start-step-card:hover .start-step-icon{background:var(--step);color:#fff}
+.start-step-card>strong{color:var(--ag-ink)}
+.start-step-desc{color:var(--ag-muted)}
+.start-step-cta{color:var(--step-ink);font-weight:600}
+
+/* 工作台 */
+.in-project .project-workspace-header h1{color:var(--ag-ink);letter-spacing:-.01em}
+.in-project .workspace-conversation{border:1px solid var(--ag-glass-edge);border-radius:20px;background:var(--ag-glass);-webkit-backdrop-filter:var(--ag-blur);backdrop-filter:var(--ag-blur);box-shadow:var(--ag-shadow)}
+.in-project .workspace-panel>.adviser-card{background:transparent}
+.in-project .adviser-card>header{border-color:var(--ag-hair)}
+
+/* 智能体标签：玻璃分段，图标各一个色调 */
+.in-project .workspace-expert-strip{gap:0;padding:8px;background:rgba(255,255,255,.34);box-shadow:inset 0 -1px var(--ag-hair)}
+.in-project .work-status-card{height:50px;margin:0;padding:0 12px 0 8px;border-radius:13px;background:transparent;transition:background .2s,box-shadow .2s}
+.in-project .work-status-card:hover{background:rgba(255,255,255,.5)}
+.in-project .work-status-card.is-selected,.in-project .work-status-card[aria-selected="true"]{height:50px;margin:0;background:rgba(255,255,255,.88);box-shadow:0 1px 2px rgba(20,56,120,.07),0 6px 16px rgba(20,56,120,.08),inset 0 0 0 1px var(--ag-glass-edge)}
+.in-project .work-card-icon{flex:0 0 34px;width:34px;height:34px;border-radius:11px;background:var(--agent,var(--ag-match));box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 10px rgba(20,70,170,.18);color:#fff}
+.in-project .work-card-icon .icon{width:19px;height:19px;stroke-width:1.8}
+.in-project .work-status-card:not(.is-selected):not([aria-selected="true"]) .work-card-icon{opacity:.82}
+.in-project #expert-tab-match,.in-project #expert-tab-interpret{--agent:var(--ag-match);--agent-ink:var(--ag-match-ink)}
+.in-project #expert-tab-assembly{--agent:var(--ag-assembly);--agent-ink:var(--ag-assembly-ink)}
+.in-project #expert-tab-guidance{--agent:var(--ag-guidance);--agent-ink:var(--ag-guidance-ink)}
+.in-project .work-status-card.is-selected h2,.in-project .work-status-card[aria-selected="true"] h2{color:var(--agent-ink,#174faf);font-weight:600}
+
+/* 对话头像跟着智能体走 */
+.in-project .project-workspace{--agent:var(--ag-match)}
+.in-project .project-workspace[data-work="assembly"],.in-project .project-workspace[data-work="diagnosis"]{--agent:var(--ag-assembly)}
+.in-project .project-workspace[data-work="guidance"],.in-project .project-workspace[data-work="review"]{--agent:var(--ag-guidance)}
+.in-project .chat-message-expert-avatar{border-radius:11px;background:var(--ag-spark) center/20px 22px no-repeat,var(--agent);box-shadow:0 4px 10px rgba(20,70,170,.18),inset 0 1px 0 rgba(255,255,255,.4)}
+
+/* 气泡 */
+.in-project .adviser-card .chat-message.chat-assistant{border:1px solid var(--ag-glass-edge);border-radius:6px 14px 14px;background:var(--ag-glass-strong);box-shadow:0 1px 2px rgba(20,56,120,.04);color:var(--ag-text)}
+.in-project .adviser-card .chat-confirmation-bubble,.in-project .adviser-card .chat-confirmation-bubble.prep-bubble{border-radius:6px 16px 16px}
+.in-project .chat-confirmation-bubble.is-clickable:hover{background:rgba(255,255,255,.94);box-shadow:inset 0 0 0 1px #a9c2ee}
+.intake-card{border:1px solid var(--ag-glass-edge);border-radius:6px 16px 16px;background:var(--ag-glass-strong)}
+.intake-question,.intake-name-row{border-color:var(--ag-hair)}
+.match-option span{border-radius:10px;transition:background .15s,border-color .15s,color .15s}
+.intake-name-row>input{background:rgba(255,255,255,.92)}
+
+/* 卡片 */
+.match-policy.is-compact{border:1px solid var(--ag-glass-edge);box-shadow:0 1px 2px rgba(20,56,120,.04)}
+.match-policy.is-clickable:hover{box-shadow:0 1px 2px rgba(20,56,120,.06),0 12px 26px rgba(20,56,120,.1),inset 0 0 0 1px #a9c2ee}
+.prep-head{border-color:var(--ag-hair)}
+.prep-card{border-color:var(--ag-hair);border-radius:14px;background:rgba(255,255,255,.86)}
+.prep-card:hover{border-color:#a9c2ee;box-shadow:0 8px 20px rgba(20,56,120,.08)}
+.prep-drop{border-radius:12px;background:rgba(244,248,254,.7)}
+.prep-file{background:rgba(238,243,250,.7)}
+.prep-advice{border-color:rgba(44,85,230,.14);background:linear-gradient(150deg,rgba(226,236,255,.8),rgba(240,249,255,.6))}
+.guidance-step{transition:background .18s}
+
+/* 输入区 */
+.in-project .chat-composer{border-color:var(--ag-hair);background:transparent}
+.in-project .chat-suggestions>button{border-radius:999px;background:rgba(255,255,255,.66);box-shadow:inset 0 0 0 1px var(--ag-glass-edge)}
+.in-project .chat-suggestions>button:hover{background:rgba(255,255,255,.95);color:#174faf}
+.in-project #adviser-chat-form{border:1px solid var(--ag-glass-edge);border-radius:16px;background:var(--ag-glass-strong);box-shadow:0 1px 2px rgba(20,56,120,.05)}
+.in-project #adviser-chat-form:focus-within{border-color:#88a9df;background:rgba(255,255,255,.95);box-shadow:0 0 0 3px rgba(21,87,230,.1)}
+.in-project .chat-send{border-radius:11px;background:#1557e6}
+
+/* 右栏：外层不加玻璃，抽屉定位在它里面 */
+.in-project .workspace-context,.in-project .is-document-open>.workspace-context{padding:0;border:0;border-radius:0;background:transparent}
+.in-project .context-card{margin-bottom:12px;border:1px solid var(--ag-glass-edge);border-radius:18px;background:var(--ag-glass);-webkit-backdrop-filter:var(--ag-blur);backdrop-filter:var(--ag-blur);box-shadow:var(--ag-shadow)}
+
+/* 抽屉：一块更厚的毛玻璃 */
+.match-drawer-scrim,.in-project .workspace-document-scrim{background:rgba(14,34,78,.22);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.match-drawer-panel,.in-project .workspace-document{border-left:1px solid var(--ag-glass-edge);border-radius:22px 0 0 22px;background:rgba(246,250,255,.84);-webkit-backdrop-filter:saturate(160%) blur(30px);backdrop-filter:saturate(160%) blur(30px);box-shadow:-24px 0 64px rgba(14,40,96,.2)}
+.match-drawer-panel>header,.in-project .workspace-document-toolbar{border-color:var(--ag-hair);background:transparent}
+.drawer-summary,.review-file,.review-block,.in-project .workspace-document .vd-card,.interpret-overview,.interpret-comparison,.guidance-policy-note{border-radius:14px}
+.drawer-summary,.review-file,.review-block{background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px var(--ag-hair)}
+.review-block.is-lack,.guidance-note,.interpret-conditions{background:rgba(255,246,232,.82);box-shadow:inset 0 0 0 1px rgba(170,110,30,.14)}
+.review-ai{border-color:rgba(44,85,230,.16);border-radius:16px;background:linear-gradient(170deg,rgba(226,236,255,.86),rgba(246,250,255,.5) 150px)}
+.review-ai-item{background:rgba(255,255,255,.92);box-shadow:0 1px 2px rgba(20,56,120,.05)}
+.review-ai-item .is-suggestion{background:rgba(226,236,255,.6)}
+.review-ai-download{background:#1557e6}
+.interpret-overview{border-color:var(--ag-glass-edge);background:linear-gradient(135deg,rgba(226,238,255,.86),rgba(255,255,255,.64) 72%)}
+.interpret-table-scroll{border-radius:12px;background:rgba(255,255,255,.76)}
+.interpret-advice{border-radius:14px}
+.in-project .workspace-document .vd-summary{border-color:var(--ag-glass-edge);border-radius:16px;background:linear-gradient(135deg,rgba(226,238,255,.9),rgba(255,255,255,.66) 72%)}
+.in-project .workspace-document .vd-card{border-color:var(--ag-hair);background:rgba(255,255,255,.8)}
+.in-project .workspace-document .vd-card .mat-body-text{background:rgba(238,243,250,.66)}
+.in-project .workspace-document .mat-confirmation{border-top:1px solid var(--ag-hair);background:rgba(246,250,255,.86);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.guidance-timeline>li::before{border-radius:9px;background:var(--ag-guidance);color:#fff}
+.interpret-footer{border-color:var(--ag-hair);background:rgba(246,250,255,.86);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+
+/* 不支持毛玻璃或用户要求减少透明时，退回实色，保证可读 */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .sidebar,.in-project .workspace-conversation,.in-project .context-card,.start-step-card,.start-hero-field{background:#fff}
+  .match-drawer-panel,.in-project .workspace-document{background:#f7faff}
+}
+@media (prefers-reduced-transparency:reduce){
+  .sidebar,.in-project .workspace-conversation,.in-project .context-card,.start-step-card,.start-hero-field{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .match-drawer-panel,.in-project .workspace-document{background:#f7faff;-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+@media (max-width:1100px){
+  .start-steps{margin-top:-72px}
+}
+@media (max-width:700px){
+  .start-hero{padding-bottom:110px}
+  .start-steps{margin-top:-60px}
+  .start-hero-field{height:116px}
+  .in-project .workspace-conversation{border-radius:16px}
+  .match-drawer-panel,.in-project .workspace-document{border-radius:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .start-step-card,.button,.in-project .work-status-card{transition:none}
+  .start-step-card:hover{transform:none}
+}
