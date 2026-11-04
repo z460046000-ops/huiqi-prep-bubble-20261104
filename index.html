@@ -7,44 +7,44 @@
   <title>惠企政策平台</title>
   <meta name="description" content="从企业情况出发，查找适用政策、看懂申报条件、准备申报材料。">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%230c5ce8'/%3E%3Cpath d='M11 12h18v16H11zM16 8v24m8-24v24M8 20h24' stroke='white' fill='none' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=glass-d10-header">
-  <link rel="stylesheet" href="materials.css?v=glass-d10-header">
-  <link rel="stylesheet" href="project-workspace.css?v=glass-d10-header">
-  <link rel="stylesheet" href="prep-cards.css?v=glass-d10-header">
-  <link rel="stylesheet" href="version-drawer.css?v=glass-d10-header">
-  <link rel="stylesheet" href="batch.css?v=glass-d10-header">
-  <link rel="stylesheet" href="home-feed.css?v=glass-d10-header">
-  <link rel="stylesheet" href="home.css?v=glass-d10-header">
-  <link rel="stylesheet" href="match.css?v=glass-d10-header">
-  <link rel="stylesheet" href="drawer.css?v=glass-d10-header">
-  <link rel="stylesheet" href="start-home.css?v=glass-d10-header">
-  <link rel="stylesheet" href="aurora-glass.css?v=glass-d10-header">
-  <script defer src="expert-personas.js?v=glass-d10-header"></script>
-  <script defer src="public-policy-data.js?v=glass-d10-header"></script>
-  <script defer src="landing-data.js?v=glass-d10-header"></script>
-  <script defer src="home-feed.js?v=glass-d10-header"></script>
-  <script defer src="demo-data.js?v=glass-d10-header"></script>
-  <script defer src="store.js?v=glass-d10-header"></script>
-  <script defer src="materials.js?v=glass-d10-header"></script>
-  <script defer src="views.js?v=glass-d10-header"></script>
-  <script defer src="match.js?v=glass-d10-header"></script>
-  <script defer src="chat.js?v=glass-d10-header"></script>
-  <script defer src="project-workspace.js?v=glass-d10-header"></script>
-  <script defer src="batch.js?v=glass-d10-header"></script>
-  <script defer src="app.js?v=glass-d10-header"></script>
+  <link rel="stylesheet" href="styles.css?v=glass-d11-check">
+  <link rel="stylesheet" href="materials.css?v=glass-d11-check">
+  <link rel="stylesheet" href="project-workspace.css?v=glass-d11-check">
+  <link rel="stylesheet" href="prep-cards.css?v=glass-d11-check">
+  <link rel="stylesheet" href="version-drawer.css?v=glass-d11-check">
+  <link rel="stylesheet" href="batch.css?v=glass-d11-check">
+  <link rel="stylesheet" href="home-feed.css?v=glass-d11-check">
+  <link rel="stylesheet" href="home.css?v=glass-d11-check">
+  <link rel="stylesheet" href="match.css?v=no-hit-rows-1104">
+  <link rel="stylesheet" href="drawer.css?v=glass-d11-check">
+  <link rel="stylesheet" href="start-home.css?v=glass-d11-check">
+  <link rel="stylesheet" href="aurora-glass.css?v=glass-d11-check">
+  <script defer src="expert-personas.js?v=glass-d11-check"></script>
+  <script defer src="public-policy-data.js?v=glass-d11-check"></script>
+  <script defer src="landing-data.js?v=glass-d11-check"></script>
+  <script defer src="home-feed.js?v=glass-d11-check"></script>
+  <script defer src="demo-data.js?v=glass-d11-check"></script>
+  <script defer src="store.js?v=glass-d11-check"></script>
+  <script defer src="materials.js?v=glass-d11-check"></script>
+  <script defer src="views.js?v=glass-d11-check"></script>
+  <script defer src="match.js?v=no-hit-rows-1104"></script>
+  <script defer src="chat.js?v=glass-d11-check"></script>
+  <script defer src="project-workspace.js?v=start-region-1104"></script>
+  <script defer src="batch.js?v=glass-d11-check"></script>
+  <script defer src="app.js?v=nav-new-chat-1104"></script>
 </head>
 <body>
   <a class="skip-link" href="#page-content">跳到主要内容</a>
   <div class="app-shell">
     <button class="sidebar-backdrop" aria-label="关闭菜单" data-action="close-menu" hidden></button>
     <aside class="sidebar" id="sidebar" aria-label="主要导航">
-      <a class="brand" href="landing.html" aria-label="返回惠企政策平台首页">
+      <a class="brand" href="#dashboard" data-route="dashboard" aria-label="返回惠企政策平台首页">
         <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="6" width="22" height="22" rx="3"/><path d="M11 3v28M21 3v28M2 16h28"/></svg>
         <span>惠企政策平台</span>
       </a>
       <button class="create-button" data-route="new" hidden><span data-icon="plus"></span>创建新任务</button>
       <nav class="primary-nav">
-        <a href="#dashboard" data-nav="dashboard"><span data-icon="grid"></span>政策匹配</a>
+        <a href="#dashboard?work=interpret" data-nav="interpret" data-action="nav-work" data-work="interpret"><span data-icon="grid"></span>政策匹配</a>
         <a href="#dashboard?work=assembly" data-nav="assembly" data-action="nav-work" data-work="assembly"><span data-icon="step-compose"></span>政策申报辅助</a>
         <a href="#dashboard?work=guidance" data-nav="guidance" data-action="nav-work" data-work="guidance"><span data-icon="step-submit"></span>办理指引</a>
         <a href="#batch" data-nav="batch" hidden><span data-icon="search"></span>批量匹配</a>
@@ -73,6 +73,6 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <noscript><p class="noscript">请在浏览器中开启 JavaScript，以使用任务与材料版本功能。</p></noscript>
-  <script src="design-seed.js?v=glass-d10-header"></script>
+  <script src="design-seed.js?v=glass-d11-check"></script>
 </body>
 </html>

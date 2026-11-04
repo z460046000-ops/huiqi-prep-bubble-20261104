@@ -154,7 +154,7 @@
     document.querySelector('[data-nav="batch"]').hidden = !researcher;
     document.querySelector('.demo-identity strong').textContent = researcher ? '政策研究工作空间' : '企业服务空间';
     document.querySelectorAll('[data-nav]').forEach(link => {
-      const startWork = route === 'dashboard' && ['assembly','guidance'].includes(params.work) ? params.work : '';
+      const startWork = route === 'dashboard' && ['interpret','assembly','guidance'].includes(params.work) ? params.work : '';
       const active = startWork ? link.dataset.nav === startWork : link.dataset.nav === route || link.dataset.nav === 'library' && ['assembly','version','compare'].includes(route);
       link.classList.toggle('is-active',active);
       if (active) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
@@ -318,9 +318,10 @@
     if (target.dataset.action==='nav-work') {
       // 在项目里就切到这个项目的对应标签，否则从首页入口开始。
       event.preventDefault();
-      const active=S.getTask(S.getState().activeTaskId);
-      if (active && ['task','profile','policy','diagnosis','assembly','guidance','version','compare','source'].includes(currentRoute().route)) { navigate('task',{task:active.id,work:target.dataset.work}); return; }
-      startDraft.question='';
+      // 侧栏入口每次都开新会话；旧会话留在“最近对话”里。
+      companyStartDraft='';
+      Object.assign(startDraft,{files:[],question:''});
+      window.PolicyMatch?.resetGuest();
       navigate('dashboard',{work:target.dataset.work});
       return;
     }

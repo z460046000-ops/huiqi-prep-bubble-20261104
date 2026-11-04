@@ -174,7 +174,7 @@
     const E=U().escape,I=U().icon;
     const selected=requested,person=window.PolicyPersonas.get(selected);
     const portrait=`--portrait-x:${person.x}%;--portrait-y:${person.y}%`;
-    const form=`<form id="company-start-form" class="intake-card start-quick-form" data-work="${selected==='interpret'?'match':selected}">${window.PolicyMatch?.quickIntakeMarkup(name,selected==='interpret') || ''}</form>`;
+    const form=`<form id="company-start-form" class="intake-card start-quick-form" data-work="${selected==='interpret'?'match':selected}">${window.PolicyMatch?.quickIntakeMarkup(name,true) || ''}</form>`;
     return startShell(selected,`<section id="workspace-panel" class="workspace-panel" role="tabpanel" aria-label="${E(person.name)}对话"><section class="adviser-card" aria-label="${E(person.name)}对话"><div class="chat-scroll-region" tabindex="0" aria-label="对话记录"><div class="chat-messages"><div class="chat-message-row is-assistant"><span class="chat-message-avatar chat-message-expert-avatar" aria-hidden="true" style="${portrait}"></span><div class="chat-message-body intake-body"><span class="chat-message-name">${E(person.name)}</span><p class="chat-message chat-assistant">${E(startGuides[selected])}</p>${form}</div></div></div></div></section></section>`);
   }
   function render(taskId,{workId,content='',route='task',capabilities=false}={}) {

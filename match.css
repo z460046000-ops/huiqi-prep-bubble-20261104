@@ -492,3 +492,22 @@
 .interpret-conditions h4{margin:0 0 4px;font-size:13px;font-weight:600;color:#785323}
 .interpret-conditions ul{margin:0;padding-left:16px;font-size:12px;line-height:1.8;color:#5d4a2c}
 .interpret-conditions small{margin-left:8px;font-size:12px;color:#8a7350}
+
+/* 无命中：换条件看看与人工客服 */
+.match-nohit{display:grid;gap:12px}
+.nohit-rows{border-top:1px solid #e4e9f0}
+.nohit-chip{min-height:30px;padding:0 10px;border:1px solid #dce3ed;border-radius:10px;background:#fff;font-size:12px;color:#445267;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.nohit-chip:hover{border-color:#88a9df}
+.nohit-chip[aria-pressed="true"]{border-color:#88a9df;background:#e7effc;color:#294574;font-weight:600}
+.nohit-chip:focus-visible{outline:2px solid #83adff;outline-offset:1px}
+.nohit-confirm{display:flex;justify-content:flex-end}
+.match-nohit .nohit-confirm .button{min-height:34px;padding:0 18px;border-radius:8px;box-shadow:none;font-size:12px;font-weight:600}
+.match-nohit .nohit-confirm .button:disabled{opacity:.45;cursor:not-allowed}
+.nohit-results{display:grid;gap:8px}
+.nohit-note{margin:0;font-size:12px;line-height:1.6;color:#66748a}
+.nohit-service{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #e6ebf2}
+.nohit-service p{margin:0;font-size:13px;color:#445267}
+.match-nohit .nohit-service .button{min-height:34px;padding:0 13px;border:1px solid #88a9df;border-radius:8px;background:#fff;box-shadow:none;color:#174faf;font-size:12px;font-weight:600}
+.match-nohit .nohit-service .button:hover{background:#e7effc}
+@media (max-width:640px){.nohit-chip,.match-nohit .nohit-confirm .button,.match-nohit .nohit-service .button{min-height:44px}}
+@media (prefers-reduced-motion:reduce){.nohit-chip{transition:none}}
