@@ -86,6 +86,34 @@
         },
       },
     },
+    // 模拟数据：演示“没有申报模板的政策”，选它直接转到办理指引。不是真实政策。
+    {
+      id: 'ne-no-template-demo', projectId: 'ne-no-template-demo', batchId: '2026',
+      title: '新能源装备技术改造补贴申报（示例）',
+      region: '全国', industries: ['新能源'], supportType: '财政补贴',
+      publishedAt: '2026-10-20', issuedAt: '2026-10-18', applicationStart: '2026-10-20', applicationEnd: '2027-03-31',
+      category: '申报通知', agency: '示例主管部门',
+      sourceUrl: 'https://www.nea.gov.cn/',
+      summary: '面向新能源装备企业的技术改造补贴。这项政策没有统一的申报模板，按材料清单准备后到官方系统填报。',
+      conditions: ['申报主体为新能源装备制造企业。'],
+      materials: ['营业执照', '技术改造项目说明', '项目投资凭证'],
+      application: {
+        noTemplate: true,
+        checklist: [
+          { id: 'business-license', label: '营业执照', note: '加盖公章的扫描件' },
+          { id: 'project-brief', label: '技术改造项目说明', note: '写明改造内容、投资额和完成时间' },
+          { id: 'investment-proof', label: '项目投资凭证', note: '合同、发票和付款凭证' },
+          { id: 'new-energy-entity', label: '申报主体为新能源装备制造企业', kind: 'condition', note: '' },
+        ],
+        templates: [],
+        templateNote: '',
+        submit: {
+          name: '示例办理平台', url: 'https://www.nea.gov.cn/', deadline: '2027年3月31日',
+          steps: ['登录系统，选择技术改造补贴事项。', '按页面要求填写企业和项目信息。', '上传清单里的材料扫描件后提交。'],
+          contact: '',
+        },
+      },
+    },
     {
       id: 'bj-application-scenarios-2026', projectId: 'bj-application-scenarios', batchId: '2026-second',
       title: '2026年第二批重点应用场景储备项目征集通知',

@@ -435,6 +435,24 @@
       toast(`已删除《${source.name}》。`);
     } else if (action === 'view-source' && task) navigate('source',{task:task.id,id:target.dataset.id,work:target.dataset.work || task.selectedWorkId});
   });
+  /* 右上角头像的账号弹窗：点头像开合，点别处或按 Esc 关闭。账号信息接入万大圣单点登录后替换。 */
+  function setAccountMenu(open) {
+    const menu=document.querySelector('.account-menu'),toggle=document.querySelector('[data-account-toggle]');
+    if(!menu||!toggle)return;
+    menu.hidden=!open;
+    toggle.setAttribute('aria-expanded',String(open));
+  }
+  document.addEventListener('click', event => {
+    const target=event.target instanceof Element?event.target:null;
+    if(target?.closest('[data-account-toggle]')){setAccountMenu(document.querySelector('.account-menu').hidden);return;}
+    if(target?.closest('[data-account-logout]')){setAccountMenu(false);navigate('dashboard');return;}
+    if(target?.closest('.account-menu-verify')||!target?.closest('.account-menu'))setAccountMenu(false);
+  });
+  document.addEventListener('keydown', event => {
+    if(event.key!=='Escape'||document.querySelector('.account-menu')?.hidden!==false)return;
+    setAccountMenu(false);
+    document.querySelector('[data-account-toggle]').focus({preventScroll:true});
+  });
   document.addEventListener('change', event => {
     const target=event.target;
     if (!(target instanceof Element)) return;

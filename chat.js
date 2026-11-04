@@ -235,12 +235,13 @@
     const statusLabel = options?.statusLabel ? `<span class="chat-expert-status">${E(options.statusLabel)}</span>` : '';
     // 申报辅助还没选政策：先选，选好才知道要备哪些材料。
     const choosingPolicy=workId==='assembly'&&!task.steps.match&&!versionsFor(task).length;
-    const interpreting=choosingPolicy?window.PolicyMatch?.assemblyPicker(task)||'':workId==='interpret'?window.PolicyMatch?.interpretMarkup(task)||'':workId==='guidance'?window.PolicyMatch?.guidanceMarkup(task)||'':'';
+    const noTemplate=workId==='assembly'?window.PolicyMatch?.noTemplateNotice(task)||'':'';
+    const interpreting=noTemplate||(choosingPolicy?window.PolicyMatch?.assemblyPicker(task)||'':workId==='interpret'?window.PolicyMatch?.interpretMarkup(task)||'':workId==='guidance'?window.PolicyMatch?.guidanceMarkup(task)||'':'');
     const intake=interpreting||(workId==='profile'?window.PolicyMatch?.intakeMarkup(task)||'':workId==='match'?window.PolicyMatch?.matchChatMarkup(task)||'':'');
     const collecting=workId==='profile'&&window.PolicyMatch?.intakeActive(task)||workId==='match'&&window.PolicyMatch?.matchPending(task)||workId==='interpret'&&window.PolicyMatch?.interpretPicking(task);
     const attach=window.PolicyMatch?.composerAttach(task,workId==='profile'||workId==='match'&&window.PolicyMatch.intakeActive(task))||'';
     const needsPolicy=['diagnosis','assembly','review'].includes(workId)&&!task.steps.match&&!(workId==='assembly'&&policyFor(task)?.noPolicy);
-    const prep=workId==='assembly'&&task.steps.match&&task.steps.diagnosis?prepMarkup(task):'';
+    const prep=workId==='assembly'&&task.steps.match&&task.steps.diagnosis&&!noTemplate?prepMarkup(task):'';
     const prepOnly=prep&&incomplete(task).length>0;
     const currentTaskBubble=collecting||interpreting||prepOnly?'':needsPolicy?consultationMarkup(task,workId,{route:'task',work:'match',label:'去选政策',detail:'选定要申报的政策后，我就能开始。没选之前可以先问我。'}):['profile','match','diagnosis','assembly','review'].includes(workId)?confirmationMarkup(task,workId):consultationMarkup(task,workId,action);
     return `<section class="adviser-card${collecting?(workId==='interpret'?' is-picking':' has-intake'):''}" data-chat-task="${E(task.id)}" data-chat-work="${workId}" aria-label="${E(expert.name)}对话">
