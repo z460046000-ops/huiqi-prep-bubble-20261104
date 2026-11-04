@@ -9,27 +9,30 @@
 .in-project .workspace-document .vd-summary-text p{margin:0 0 2px;font-size:14px;line-height:1.5;font-weight:600;color:#1d2733}
 .in-project .workspace-document .vd-summary-text small{font-size:12px;line-height:1.6;color:#62748b}
 
-.in-project .workspace-document .vd-card{margin:0 0 10px;padding:12px 14px;border:1px solid #e4e9f0;border-radius:12px;background:#fff}
+/* 比通用只读章节更具体，避免 drawer.css 后加载时清掉卡片内边距。 */
+.in-project .workspace-document .vd-card.mat-readonly-section{margin:0 0 14px;padding:16px;border:1px solid var(--ag-hair,#e4e9f0);border-radius:14px;background:var(--ag-glass-strong,#fff)}
 .in-project .workspace-document .vd-card.is-pending{border-color:#efdcc0}
-.vd-head{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;min-width:0}
-.in-project .workspace-document .vd-head h2{margin:0;font-size:14px;line-height:1.5;font-weight:600;color:#1d2733}
+.vd-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;min-width:0;min-height:28px}
+.in-project .workspace-document .vd-card .vd-head h2{min-width:0;margin:0;font-size:14px;line-height:1.5;font-weight:600;color:#1d2733;overflow-wrap:anywhere}
 .vd-head .text-button,.vd-head .chat-gap-upload{min-height:0;padding:0;font-size:12px;line-height:1.6;color:#174faf}
-.vd-actions{display:flex;align-items:center;gap:14px;margin-left:auto}
+.vd-actions{display:flex;align-items:center;flex:0 0 auto;gap:14px;margin-left:auto}
 .vd-head .vd-delete{color:#b23b3b}
 .prep-state.vd-warn{color:#8a541c}
 .vd-flag{margin:8px 0 0;font-size:12px;line-height:1.6;color:#785323}
-.in-project .workspace-document .vd-card .mat-body-clamp{margin-top:8px}
-.in-project .workspace-document .vd-card .mat-body-text{padding:10px 12px;border-radius:8px;background:#f8fafd;font-size:13px;line-height:1.7;color:#445267}
-.in-project .workspace-document .vd-card .mat-body-toggle{display:block;width:100%;margin-top:4px;padding:2px 0;text-align:center}
+.in-project .workspace-document .vd-card .mat-body-clamp{margin-top:12px}
+.in-project .workspace-document .vd-card .mat-body-text{padding:14px 16px;border-radius:10px;background:#f8fafd;font-size:13px;line-height:1.7;color:#445267}
+.in-project .workspace-document .vd-card .mat-body-toggle{display:block;width:100%;margin-top:8px;padding:6px 0;text-align:center}
 .in-project .workspace-document .vd-card .mat-body-toggle[hidden]{display:none}
-.vd-quotes{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px;margin-top:8px;font-size:12px;color:#7a8797}
+.vd-quotes{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--ag-hair,#e4e9f0);font-size:12px;color:#7a8797}
 .vd-quotes .mat-sources{flex:1;min-width:0;margin:0}
 .vd-quotes .mat-source summary{font-size:12px}
-.in-project .workspace-document .vd-card.is-empty{padding:9px 14px}
+.in-project .workspace-document .vd-card.mat-readonly-section.is-empty{padding:12px 16px}
 
 /* 底部：确定是这个抽屉唯一的主操作 */
 .in-project .workspace-document .mat-confirmation [data-action=mat-confirm]{min-width:150px;min-height:40px;border-radius:10px;font-size:14px;font-weight:600}
 @media (max-width:640px){
+  .in-project .workspace-document .vd-card.mat-readonly-section{padding:14px}
+  .in-project .workspace-document .vd-card .mat-body-text{padding:12px}
   .in-project .workspace-document .vd-summary{gap:14px;padding:12px 14px}
   .vd-score{padding-right:14px}
   .vd-actions{margin-left:0;width:100%}
