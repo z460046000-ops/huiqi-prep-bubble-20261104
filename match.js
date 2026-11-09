@@ -359,9 +359,10 @@
     const measured = metrics.filter(row => row.metric.have !== null);
     const score = !metrics.length ? 100 : measured.length ? Math.round(measured.reduce((sum, row) => sum + Math.min(1, row.metric.have / row.metric.need), 0) / measured.length * 100) : null;
     const pending = [...gate, ...metrics].filter(row => row.status === 'unknown').length;
-    // 展示：全部未知显示“待确认”；≥90 显示“预估匹配分较高”；≤10 显示“预估匹配分较低”；其余显示具体分数。
-    const level = blocked ? '准入不符' : score === null ? '待确认' : score >= 90 ? '预估匹配分较高' : score <= 10 ? '预估匹配分较低' : `${score} 分`;
-    return { score, level, pending, blocked };
+    // 展示：全部未知显示“待确认”；≥90 封顶显示 90 分；≤10 显示“较低”；下方小字统一写“预估匹配分”。
+    const shown = score === null ? null : Math.min(score, 90);
+    const level = blocked ? '准入不符' : score === null ? '待确认' : score <= 10 ? '较低' : `${shown} 分`;
+    return { score, shown, level, pending, blocked };
   }
   function comparisonRows(task, policy) {
     const { region, industry } = factsOf(task);
@@ -390,19 +391,19 @@
 
   function scoreBadge(task, policy) {
     const result = policyScore(task, policy);
-    return result ? `<span class="policy-score${result.score === null || result.score >= 90 || result.score <= 10 ? ' is-text' : ''}"><strong>${result.score !== null && result.score > 10 && result.score < 90 ? `${result.score}<small>分</small>` : result.level}</strong><small>匹配分</small>${suggestPause(result, policy) ? pauseTag : ''}</span>` : '';
+    return result ? `<span class="policy-score${result.score === null || result.score <= 10 ? ' is-text' : ''}"><strong>${result.score !== null && result.score > 10 ? `${result.shown}<small>分</small>` : result.level}</strong><small>预估匹配分</small>${suggestPause(result, policy) ? pauseTag : ''}</span>` : '';
   }
 
   function scoreText(task, policy) {
     const result = policy && policyScore(task, policy);
     if (!result) return '告诉我企业名称和情况，我才能算匹配分。';
-    return `本产品不估算获批概率。按现在的信息，「${policy.title}」的匹配分是${result.level}${result.pending ? `，还有 ${result.pending} 项待确认，补充后更准` : ''}；材料准备度 ${result.ready}/${result.total}。${{ open: '', notice: '这项政策暂未开放申报，可以提前准备。', closed: '这项政策已截止，本期无法申报。' }[statusOf(policy)]}最终以主管部门审核为准。`;
+    return `本产品不估算获批概率。按现在的信息，「${policy.title}」的预估匹配分${result.level === '较低' ? '较低' : `是${result.level}`}${result.pending ? `，还有 ${result.pending} 项待确认，补充后更准` : ''}；材料准备度 ${result.ready}/${result.total}。${{ open: '', notice: '这项政策暂未开放申报，可以提前准备。', closed: '这项政策已截止，本期无法申报。' }[statusOf(policy)]}最终以主管部门审核为准。`;
   }
 
   function scorePanel(task, policy) {
     const status = statusOf(policy);
     const result = policyScore(task, policy);
-    return `<div class="interpret-score"><div class="score-orb${result ? '' : ' is-empty'}">${result ? `<strong>${result.level}</strong>` : '<strong>--</strong>'}<span>匹配分</span></div><p>${status === 'open' ? '' : status === 'closed' ? '这项政策已截止。' : '这项政策暂无申报窗口。'}${result ? '按现在的信息和资料估算，最终以主管部门审核为准。' : '告诉我企业情况和资料，我来估算。'}</p></div>`;
+    return `<div class="interpret-score"><div class="score-orb${result ? '' : ' is-empty'}">${result ? `<strong>${result.level}</strong>` : '<strong>--</strong>'}<span>预估匹配分</span></div><p>${status === 'open' ? '' : status === 'closed' ? '这项政策已截止。' : '这项政策暂无申报窗口。'}${result ? '按现在的信息和资料估算，最终以主管部门审核为准。' : '告诉我企业情况和资料，我来估算。'}</p></div>`;
   }
 
   const viewButton = (task, policy) => `<button type="button" class="text-button match-policy-view" data-action="match-drawer" data-task="${esc(task.id)}" data-policy="${esc(policy.id)}">查看 ${icon('chevron')}</button>`;
@@ -536,10 +537,10 @@
     const patents=gaps.find(row=>row.key==='patents');
     const step=patents||[...gaps].sort((a,b)=>(a.metric.need-a.metric.have)/a.metric.need-(b.metric.need-b.metric.have)/b.metric.need)[0];
     const next=step?scoreOf(result.rows.map(row=>row===step?{...row,status:'ready',metric:{...row.metric,have:row.metric.need}}:row)):result;
-    const lift=step&&result.score!==null&&next.score>result.score;
-    const now=`按现有信息，这项政策的匹配分为 <b>${result.level}</b>`;
+    const lift=step&&result.score!==null&&next.shown>result.shown;
+    const now=`按现有信息，这项政策的预估匹配分${result.level === '较低' ? '<b>较低</b>' : `为 <b>${result.level}</b>`}`;
     const text=step?`${now}，补充 ${step.metric.need-step.metric.have} ${metricUnit(step.metric.unit)}${esc(step.metric.label)}后${lift?`，匹配分可提高到 <b>${next.level}</b>`:'，更接近政策要求'}${patents?'，为您推荐专利服务':''}。`:result.pending?`${now}。还有 ${result.pending} 项待确认，补充后更准。`:`${now}。条件已基本符合，可以准备申报材料。`;
-    const meter=lift?`<div class="interpret-advice-lift" aria-hidden="true"><div class="interpret-advice-numbers"><span>${result.score}</span>${icon('arrow')}<strong>${next.score}</strong><em>+${next.score-result.score}</em></div><div class="interpret-advice-bar"><i style="width:${result.score}%"></i><i class="is-gain" style="width:${next.score-result.score}%"></i></div></div>`:'';
+    const meter=lift?`<div class="interpret-advice-lift" aria-hidden="true"><div class="interpret-advice-numbers"><span>${result.shown}</span>${icon('arrow')}<strong>${next.shown}</strong><em>+${next.shown-result.shown}</em></div><div class="interpret-advice-bar"><i style="width:${result.shown}%"></i><i class="is-gain" style="width:${next.shown-result.shown}%"></i></div></div>`:'';
     return `<aside class="interpret-advice${meter?'':' is-plain'}" aria-label="AI 建议"><div class="interpret-advice-copy"><span class="interpret-advice-tag">${icon('spark')} AI 建议</span><p>${text}</p><small>按现有信息判断，仅供参考，以主管部门审核为准。</small></div>${meter}</aside>`;
   }
   function recommendationMarkup(task,policy,rows) {
@@ -614,7 +615,7 @@
     const result=policyScore(task,policy),rows=result?.rows||comparisonRows(task,policy),materials=rows.find(row=>row.key==='materials');
     const pending=rows.filter(row=>row.status!=='ready'&&row.key!=='materials').length;
     const facts=[['支持方向',policy.supportType],['适用地区',policy.region],['申报时间',windowText(policy)],['发布部门',policy.agency]];
-    return `<div class="policy-review"><section class="interpret-overview"><div class="interpret-eyebrow">01 / 了解政策</div><h3><a class="interpret-title" href="${esc(policy.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(policy.title)} ${icon('arrow')}</a></h3><p class="interpret-summary">${esc(policy.summary)}</p><div class="interpret-summary-grid"><dl class="interpret-facts">${facts.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><div class="interpret-score-result"><span>匹配分</span><strong data-total-score="${result?.score??''}">${result?result.level:'—'}</strong><div><b>${pending}</b> 项可能不符或未知</div>${suggestPause(result, policy) ? pauseTag : ''}<small>${{ open: '地区、行业只做准入判断，未知不过滤；量化条件按现有 ÷ 要求计算；材料不计入匹配分', notice: '暂未开放申报，可以提前准备', closed: '本期已截止，无法申报' }[statusOf(policy)]}</small></div></div>${conditionsNotice(policy)}</section><section class="interpret-comparison" aria-labelledby="comparison-title"><div class="interpret-section-heading"><span>02</span><div><h3 id="comparison-title">逐项对照，看看还差什么</h3><p>核对企业现状，再准备对应资料。</p></div></div><div class="interpret-table-scroll" tabindex="0" role="region" aria-label="政策条件对照表"><table class="interpret-table"><thead><tr><th scope="col">对照维度</th><th scope="col">政策要求</th><th scope="col">企业现状</th><th scope="col">条件类型</th><th scope="col">操作</th></tr></thead><tbody>${rows.map(row=>comparisonRow(task,policy,row)).join('')}</tbody></table></div><div id="interpret-supplement" aria-live="polite"></div>${policy.applicationTimeNote?`<p class="interpret-time-note">${esc(policy.applicationTimeNote)}</p>`:''}</section>${adviceMarkup(policy,result)}${recommendationMarkup(task,policy,rows)}</div>`;
+    return `<div class="policy-review"><section class="interpret-overview"><div class="interpret-eyebrow">01 / 了解政策</div><h3><a class="interpret-title" href="${esc(policy.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(policy.title)} ${icon('arrow')}</a></h3><p class="interpret-summary">${esc(policy.summary)}</p><div class="interpret-summary-grid"><dl class="interpret-facts">${facts.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><div class="interpret-score-result"><span>预估匹配分</span><strong data-total-score="${result?.score??''}">${result?result.level:'—'}</strong><div><b>${pending}</b> 项可能不符或未知</div>${suggestPause(result, policy) ? pauseTag : ''}<small>${{ open: '地区、行业只做准入判断，未知不过滤；量化条件按现有 ÷ 要求计算；材料不计入匹配分', notice: '暂未开放申报，可以提前准备', closed: '本期已截止，无法申报' }[statusOf(policy)]}</small></div></div>${conditionsNotice(policy)}</section><section class="interpret-comparison" aria-labelledby="comparison-title"><div class="interpret-section-heading"><span>02</span><div><h3 id="comparison-title">逐项对照，看看还差什么</h3><p>核对企业现状，再准备对应资料。</p></div></div><div class="interpret-table-scroll" tabindex="0" role="region" aria-label="政策条件对照表"><table class="interpret-table"><thead><tr><th scope="col">对照维度</th><th scope="col">政策要求</th><th scope="col">企业现状</th><th scope="col">条件类型</th><th scope="col">操作</th></tr></thead><tbody>${rows.map(row=>comparisonRow(task,policy,row)).join('')}</tbody></table></div><div id="interpret-supplement" aria-live="polite"></div>${policy.applicationTimeNote?`<p class="interpret-time-note">${esc(policy.applicationTimeNote)}</p>`:''}</section>${adviceMarkup(policy,result)}${recommendationMarkup(task,policy,rows)}</div>`;
   }
 
   function updateInterpretDrawer(task,policy) {
@@ -942,7 +943,7 @@
     const facts = [['支持方向', policy.supportType], ['适用地区', policy.region], ['申报时间', windowText(policy)], ['发布日期', policy.publishedAt]];
     const left = status === 'open' && policy.applicationStart <= today() || status === 'open' && !policy.applicationStart ? daysLeft(policy) : null;
     const scored = policyScore(task, policy);
-    const side = scored ? `<span>匹配分</span><strong>${scored.level}</strong>` : left !== null ? `<span>距离截止</span><strong>${left}<small> 天</small></strong>` : `<span>申报状态</span><strong class="is-text">${{ open: '未开始', notice: '暂无窗口', closed: '已截止' }[status]}</strong>`;
+    const side = scored ? `<span>预估匹配分</span><strong>${scored.level}</strong>` : left !== null ? `<span>距离截止</span><strong>${left}<small> 天</small></strong>` : `<span>申报状态</span><strong class="is-text">${{ open: '未开始', notice: '暂无窗口', closed: '已截止' }[status]}</strong>`;
     const list = (title, items) => items.length ? `<div><h4>${title}</h4><ul>${items.map(item => `<li>${esc(item)}</li>`).join('')}</ul></div>` : '';
     return `<article class="match-policy is-full is-${status}${first ? ' is-first' : ''}"><div class="match-policy-main"><p class="match-policy-tag">${tag}</p><h3>${esc(policy.title)}</h3><p class="match-policy-keywords">${keywords.map(esc).join(' / ')}</p><p class="match-policy-summary">${esc(policy.summary)}</p><dl class="match-policy-facts">${facts.map(([label, value]) => `<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></div><div class="match-policy-side">${side}${status === 'open' ? `<button type="button" class="button ${first ? 'button-primary' : 'button-secondary'}" data-action="match-apply" data-task="${esc(task.id)}" data-policy="${esc(policy.id)}">${chosen ? '已选这项政策' : '申报这项政策'} ${icon('arrow')}</button>` : ''}<a class="match-policy-source" href="${esc(policy.sourceUrl)}" target="_blank" rel="noopener noreferrer">查看政策原文</a></div><div class="match-policy-columns">${list('命中原因', (() => { const all = hitReasons(task, { policy, status, reasons }); return all.length ? all : ['补充企业情况后会给出命中原因']; })())}${list('申报条件', checks)}${list('所需材料', policy.materials)}</div><p class="match-policy-agency"><span>发布部门</span>${esc(policy.agency)}</p></article>`;
   }
