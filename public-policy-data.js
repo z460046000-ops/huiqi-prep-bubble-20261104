@@ -86,6 +86,33 @@
         },
       },
     },
+    // 模拟数据：演示“库表缺失”——原文附件里有申请表，但数据表里没收录。不是真实政策。
+    {
+      id: 'digital-template-missing-demo', projectId: 'digital-template-missing-demo', batchId: '2026',
+      title: '中小企业数字化改造补贴申报（示例：模板暂未收录）',
+      region: '全国', industries: ['软件信息', '先进制造', '现代服务'], supportType: '数字化改造',
+      publishedAt: '2026-10-25', issuedAt: '2026-10-22', applicationStart: '2026-10-25', applicationEnd: '2027-01-31',
+      category: '申报通知', agency: '示例主管部门',
+      sourceUrl: 'https://www.miit.gov.cn/',
+      summary: '面向中小企业数字化改造项目的补贴。原文附件里有申报书模板，但数据表里暂未收录，需要从原文下载后上传。',
+      conditions: ['申报主体为依法登记的中小企业。'],
+      materials: ['申报书（按原文附件模板填写）', '营业执照', '数字化改造项目说明'],
+      application: {
+        templateStatus: 'missing',
+        checklist: [
+          { id: 'apply-form', label: '申报书', note: '按原文附件里的模板填写' },
+          { id: 'business-license', label: '营业执照', note: '加盖公章的扫描件' },
+          { id: 'project-brief', label: '数字化改造项目说明', note: '写明改造内容和投资额' },
+        ],
+        templates: [],
+        templateNote: '原文附件有模板，数据表暂未收录',
+        submit: {
+          name: '示例办理平台', url: 'https://www.miit.gov.cn/', deadline: '2027年1月31日',
+          steps: ['登录系统，选择数字化改造补贴事项。', '填写企业和项目信息。', '上传材料后提交。'],
+          contact: '',
+        },
+      },
+    },
     // 模拟数据：演示“没有申报模板的政策”，选它直接转到办理指引。不是真实政策。
     {
       id: 'ne-no-template-demo', projectId: 'ne-no-template-demo', batchId: '2026',

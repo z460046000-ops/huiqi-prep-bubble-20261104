@@ -511,3 +511,9 @@
 .match-nohit .nohit-service .button:hover{background:#e7effc}
 @media (max-width:640px){.nohit-chip,.match-nohit .nohit-confirm .button,.match-nohit .nohit-service .button{min-height:44px}}
 @media (prefers-reduced-motion:reduce){.nohit-chip{transition:none}}
+
+/* 政策类型筛选、匹配分文字、库表缺失提示（2026-11-09） */
+.match-type-filter{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.policy-score.is-text strong{max-width:4.5em;font-size:13px;line-height:1.3;white-space:normal;text-align:right}
+.template-missing{margin:0 0 8px;padding:8px 10px;border-radius:8px;background:#fff7e8;color:#8a5a12;font-size:13px}
+.match-policy.has-score .match-policy-reason{padding-right:78px}
