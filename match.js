@@ -438,9 +438,11 @@
   const companyRisks = task => RISK_NAMES[(task?.company?.name || '').trim()] || [];
   function diagnosisCard(task) {
     if (companyNotFound(task)) return '';
+    // 只在查到风险时出现；没有风险的企业不打扰。
     const risks = companyRisks(task);
-    const riskRows = risks.length ? risks.map(([label, detail]) => `<li class="is-risk"><b>${esc(label)}</b>${esc(detail)}</li>`).join('') : '<li class="is-ok"><b>未发现</b>经营异常、行政处罚、被执行、失信、限高</li>';
-    return `<section class="diag-card" aria-labelledby="diag-title"><header><h3 id="diag-title">企业诊断 · 合规风险</h3><small>数据依据：企业地图接口</small></header><ul>${riskRows}<li class="is-na"><b>暂缺</b>证照、用工、财税（接口没有这类数据）</li></ul>${risks.length ? serviceRec('risk') : ''}</section>`;
+    if (!risks.length) return '';
+    const riskRows = risks.map(([label, detail]) => `<li class="is-risk"><b>${esc(label)}</b>${esc(detail)}</li>`).join('');
+    return `<section class="diag-card" aria-labelledby="diag-title"><header><h3 id="diag-title">发现 ${risks.length} 项经营风险，可能影响申报</h3><small>来源：工商公开信息</small></header><ul>${riskRows}</ul>${serviceRec('risk')}</section>`;
   }
   const companyNotFound = task => NOT_FOUND_NAMES.includes((task?.company?.name || '').trim());
   const notFoundNotice = task => companyNotFound(task) ? `<div class="company-notfound" role="status"><p><strong>没有查到「${esc(task.company.name)}」的工商信息。</strong>请核对企业全称是否和营业执照一致。下面的结果只按您填写的信息匹配，专利、软著、研发人员需要您补充。</p><button type="button" class="text-button" data-action="portrait-edit" data-task="${esc(task.id)}">修改企业名称或补充信息</button></div>` : '';
@@ -548,24 +550,145 @@
   const patentServiceDestination = 'https://www.wdsheng.com/employer/find-service/detail/479304003798693';
   /* 换一批：只换卡片本身，抽屉不重绘、不滚动。 */
   const serviceBatchSize = 2;
-  let serviceBatch = 0;
-  const serviceCards = () => patentServices.slice(serviceBatch*serviceBatchSize,(serviceBatch+1)*serviceBatchSize).map(service=>`<a class="interpret-service-card is-marketplace" href="${patentServiceDestination}" target="_blank" rel="noopener noreferrer"><img class="interpret-service-thumbnail" src="${esc(service.cover)}" alt="" width="76" height="76"><div class="interpret-service-copy"><h4>${esc(service.name)}</h4><p>${esc(service.description)}</p><span class="interpret-service-entry">查看服务 ${icon('arrow')}</span></div></a>`).join('');
+  const serviceCards = () => { const b = serviceBatches.patent || 0; return patentServices.slice(b*serviceBatchSize,(b+1)*serviceBatchSize).map(service=>marketCard(service, patentServiceDestination)).join(''); };
   /* AI 建议：学芝麻分的提分逻辑，说清现在多少、做哪一步、能提到多少。数字只来自对照表的分项差额；有专利缺口时优先推专利服务。 */
   /* 服务推荐（PRD 8.1.6）：按差距类型推荐万大圣服务。点“了解服务”新窗口打开官网；点“暂不需要”后本次会话同类不再出现。 */
-  const SERVICE_SITE = 'https://www.wdsheng.com';
+  const SERVICE_DETAIL = id => `https://www.wdsheng.com/employer/find-service/detail/${id}`;
+  // 万大圣公开服务（2026-11-10 从服务大厅检索并核对详情），简介按原文压缩。
+  const serviceCatalog = {
+    "qualification": [
+      {
+        "id": 479984587933477,
+        "name": "高新技术企业认定申报辅导",
+        "description": "对照认定条件逐项体检，输出差距补齐清单，专家网报代办。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260918/e30715a4-4572-4e17-9337-b4f4c0f390ce/008_18%E6%9E%81%E7%AE%80%E7%BA%AF%E6%A0%87%E9%A2%98_%E9%AB%98%E6%96%B0%E6%8A%80%E6%9C%AF%E4%BC%81%E4%B8%9A%E8%AE%A4%E5%AE%9A%E7%94%B3%E6%8A%A5%E8%BE%85%E5%AF%BC.png"
+      },
+      {
+        "id": 479652599469733,
+        "name": "高新技术企业认定代办",
+        "description": "材料准备、审计协调、提交审核和现场核查指导全流程代办。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260917/bbe6334e-49c7-4cd1-9ff7-f9d81923e65b/041_14%E5%A4%A7%E5%BA%8F%E5%8F%B7%E8%83%8C%E6%99%AF%E5%AD%97_%E9%AB%98%E6%96%B0%E6%8A%80%E6%9C%AF%E4%BC%81%E4%B8%9A%E8%AE%A4%E5%AE%9A%E4%BB%A3%E5%8A%9E.png"
+      },
+      {
+        "id": 481079252424453,
+        "name": "高新技术企业认定与复审辅导",
+        "description": "盘点研发项目和费用归集，编制申报材料并跟进评审。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260921/1048de3b-17fa-4291-b5d8-46fc6574ca5d/020_10%E6%A0%87%E7%AD%BE%E8%83%B6%E5%9B%8A_%E9%AB%98%E6%96%B0%E6%8A%80%E6%9C%AF%E4%BC%81%E4%B8%9A%E8%AE%A4%E5%AE%9A%E4%B8%8E%E5%A4%8D%E5%AE%A1%E8%BE%85%E5%AF%BC.png"
+      },
+      {
+        "id": 483910031161477,
+        "name": "地方国家高新技术企业认定",
+        "description": "不通过免服务费再次申报，直到通过。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260929/4a88f359-2188-4b24-abbc-ccf5c1f8b4d3/09_%E5%9C%B0%E6%96%B9%E5%9B%BD%E5%AE%B6%E9%AB%98%E6%96%B0%E6%8A%80%E6%9C%AF%E4%BC%81%E4%B8%9A%E8%AE%A4%E5%AE%9A.jpg"
+      }
+    ],
+    "rdFee": [
+      {
+        "id": 482476909455493,
+        "name": "高新研发费用归集与材料组织",
+        "description": "按高新口径重新归集研发费用，组织佐证材料。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260925/43a4fd5b-5ae2-4b1e-8112-40ddff55a494/020_%E4%BB%BB%E6%99%93%E9%94%8B_icon_%E7%99%BD0.png"
+      },
+      {
+        "id": 481522730002501,
+        "name": "高新认定研发费用归集专项辅导",
+        "description": "梳理研发立项与费用科目，搭建研发费用辅助账。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260922/f34f73bc-a395-41b0-a2d9-f272ae1adb6e/020_%E4%BB%BB%E6%99%93%E9%94%8B.png"
+      },
+      {
+        "id": 487683634370693,
+        "name": "高企研发费用归集与辅助账建立",
+        "description": "按口径建辅助账，人员工时与立项材料配套。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20261010/81af85f1-5130-4f61-9d2c-0f343b958393/020_%E4%BB%BB%E6%99%93%E9%94%8B_%E9%AB%98%E4%BC%81%E7%A0%94%E5%8F%91%C2%B7%E5%BD%92%E9%9B%86%E5%BB%BA%E8%B4%A6.png"
+      },
+      {
+        "id": 488452433975397,
+        "name": "研发费用加计扣除归集与佐证整理",
+        "description": "按项目归集研发费用并整理佐证，口径前后一致。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20261012/1b647946-3a93-48cb-a2a7-4dc8d07716c7/018_%E4%BB%BB%E6%99%93%E9%94%8B_%E7%A0%94%E5%8F%91%E5%8A%A0%E8%AE%A1%C2%B7%E5%BD%92%E9%9B%86%E4%BD%90%E8%AF%81.png"
+      }
+    ],
+    "material": [
+      {
+        "id": 482476746877093,
+        "name": "市级政策项目申报包装辅导",
+        "description": "对照评审要点包装申报材料，突出企业亮点与佐证。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260925/1b2995a8-ba64-452f-84b0-0c11dc39f3f7/018_%E4%BB%BB%E6%99%93%E9%94%8B_card_%E8%93%9D9.png"
+      },
+      {
+        "id": 481415378294757,
+        "name": "政府项目申报商业计划书撰写",
+        "description": "按申报要求撰写项目计划书，配套答辩提纲与预算说明。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260922/18c69099-88a0-4a35-ae3c-f0a598e8903d/055_%E9%93%B6%E8%89%AF%E5%8D%8E_%E5%95%86%E4%B8%9A%E8%AE%A1%E5%88%92%E4%B9%A6.png"
+      },
+      {
+        "id": 491047647004997,
+        "name": "技术改造项目申报与设备清单组织",
+        "description": "按申报口径组织设备与购置凭证材料。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20261019/f9d726c8-cd98-4991-b050-ffb31831e5ee/018_%E4%BB%BB%E6%99%93%E9%94%8B_%E6%8A%80%E6%94%B9%E9%A1%B9%E7%9B%AE%C2%B7%E7%94%B3%E6%8A%A5%E6%9D%90%E6%96%99.png"
+      },
+      {
+        "id": 483213261625509,
+        "name": "新建项目可研报告与立项申报",
+        "description": "按立项口径编制可研报告，市场、技术和财务测算一起过。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260927/5d525d49-faa2-4b8a-9326-2c87ab884275/053_%E9%93%B6%E8%89%AF%E5%8D%8E_icon_%E7%99%BD6.png"
+      }
+    ],
+    "handling": [
+      {
+        "id": 479304003798693,
+        "name": "地区政策申报-项目补贴",
+        "description": "撰写补贴资料、准备答辩，全流程跟进到拿到补贴。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260917/c0aae314-7527-4add-a652-42661ce76f24/watermark_2fcf711d-fc56-40b6-8edd-1c706d15d52b.png"
+      },
+      {
+        "id": 473965891854757,
+        "name": "企业项目申报外包服务",
+        "description": "提供项目规划、申请及后期服务。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260902/983226af-d2d8-4730-a0d9-722131e6a267/7194ad3f5c31511866981d07a720cdd7.png"
+      },
+      {
+        "id": 483898557151301,
+        "name": "知识产权—项目申报",
+        "description": "专人对接，资料标准化撰写，提前排查风险。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260929/c3f73f84-b6ae-4bd7-b5dd-3d2b13627b2a/%E5%8F%AA%E6%98%AF%E4%BA%A7%E6%9D%83.jpeg"
+      }
+    ],
+    "risk": [
+      {
+        "id": 486788512569413,
+        "name": "企业信用修复与经营异常移出协办",
+        "description": "梳理异常成因，组织修复材料，跟进移出进度。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20261007/de00a507-8ad4-4d84-97e1-7e749e0f3f9f/099_%E7%8E%8B%E7%BE%BD_%E4%BF%A1%E7%94%A8%E4%BF%AE%E5%A4%8D%C2%B7%E5%BC%82%E5%B8%B8%E7%A7%BB%E5%87%BA.png"
+      },
+      {
+        "id": 480709878961925,
+        "name": "企业信用修复与经营异常移出代办",
+        "description": "补办年报、更正公示信息，提交移出申请并跟进审核。",
+        "cover": "https://cdn-esp.wanmol.com/espprod/wlyd-oss-aiplatform-esp-public/114/20260920/c69926c5-dd2f-4b43-91c3-90a830a4457b/094_13%E5%B7%A6%E7%AB%96%E6%9D%A1%E6%A0%87%E9%A2%98_%E4%BC%81%E4%B8%9A%E4%BF%A1%E7%94%A8%E4%BF%AE%E5%A4%8D%E4%B8%8E%E7%BB%8F%E8%90%A5%E5%BC%82%E5%B8%B8%E7%A7%BB%E5%87%BA%E4%BB%A3%E5%8A%9E.png"
+      }
+    ]
+  };
   const serviceKinds = {
-    qualification: { title: '离政策要求只差一点', service: '资质认定辅导', desc: '协助梳理高新、专精特新等认定条件，补齐差的那一项。' },
-    rdFee: { title: '研发费用归集不规范会影响认定', service: '财税代账、研发费用归集', desc: '按政策口径整理研发费用台账，减少认定时被核减。' },
-    material: { title: '材料问题较多', service: '申报材料代写', desc: '由专业顾问按政策要点改写材料，减少反复补正。' },
-    handling: { title: '申报有困难？', service: '专业申报服务', desc: '顾问协助在官方系统填报和上传，登录和提交仍由您本人完成。' },
-    risk: { title: '经营异常会影响申报资格', service: '合规、信用修复', desc: '协助处理经营异常、行政处罚的移出和信用修复。' },
+    qualification: { title: '离政策要求只差一点，看看资质认定辅导', sub: '万大圣 · 资质认定服务' },
+    rdFee: { title: '研发费用归集不规范会影响认定', sub: '万大圣 · 研发费用归集服务' },
+    material: { title: '材料问题较多，可以找人帮忙改', sub: '万大圣 · 申报材料服务' },
+    handling: { title: '申报有困难？了解专业申报服务', sub: '万大圣 · 项目申报服务' },
+    risk: { title: '经营异常会影响申报资格', sub: '万大圣 · 信用修复服务' },
   };
   const dismissedServices = new Set();
-  function serviceRec(kind) {
-    const item = serviceKinds[kind];
-    if (!item || dismissedServices.has(kind)) return '';
-    return `<aside class="svc-rec" data-service-kind="${kind}" aria-label="服务推荐"><div class="svc-rec-copy"><span class="svc-rec-tag">万大圣 · 服务推荐</span><strong>${esc(item.title)}${/[？?]$/.test(item.title) ? '' : '，'}了解${esc(item.service)}</strong><p>${esc(item.desc)}</p></div><div class="svc-rec-actions"><a class="button button-secondary svc-rec-go" href="${SERVICE_SITE}" target="_blank" rel="noopener noreferrer">了解服务 ${icon('arrow')}</a><button type="button" class="text-button svc-rec-dismiss" data-action="service-dismiss" data-kind="${kind}">暂不需要</button></div></aside>`;
+  const serviceBatches = {};
+  const marketCard = (service, href) => `<a class="interpret-service-card is-marketplace" href="${href}" target="_blank" rel="noopener noreferrer"><img class="interpret-service-thumbnail" src="${esc(service.cover)}" alt="" width="76" height="76" loading="lazy"><div class="interpret-service-copy"><h4>${esc(service.name)}</h4><p>${esc(service.description)}</p><span class="interpret-service-entry">查看服务 ${icon('arrow')}</span></div></a>`;
+  const kindCards = kind => { const list = serviceCatalog[kind] || [], b = serviceBatches[kind] || 0; return list.slice(b * serviceBatchSize, (b + 1) * serviceBatchSize).map(item => marketCard(item, SERVICE_DETAIL(item.id))).join(''); };
+  /* 所有服务推荐统一成专利服务那种样式：标题、来源、换一批、两张服务卡。“暂不需要”后本次会话同类不再出现。 */
+  function serviceSection(kind, { num = '', title = '', sub = '', cards = '', pages = 0 } = {}) {
+    if (dismissedServices.has(kind)) return '';
+    const meta = serviceKinds[kind] || {};
+    const total = pages || Math.ceil((serviceCatalog[kind] || []).length / serviceBatchSize);
+    const refresh = total > 1 ? `<button type="button" class="text-button interpret-service-refresh" data-action="interpret-services-refresh" data-kind="${kind}">${icon('refresh')} 换一批</button>` : '';
+    return `<section class="interpret-services svc-section" data-service-kind="${kind}" aria-label="服务推荐"><div class="interpret-section-heading">${num ? `<span>${num}</span>` : ''}<div><h3>${esc(title || meta.title)}</h3><p>${esc(sub || meta.sub)}</p></div>${refresh}<button type="button" class="text-button svc-dismiss" data-action="service-dismiss" data-kind="${kind}">暂不需要</button></div><div class="interpret-service-grid" aria-live="polite">${cards || kindCards(kind)}</div></section>`;
   }
+  const serviceRec = kind => serviceSection(kind);
   const rdLowOptions = ['2%以下', '2%-3%'];
   /* 资质差一点：量化条件只差 1 项，且只差 1～2 个（PRD 8.2.3“差一点”）。研发费用不达标：研发费占比选了 3% 以下，政策是研发或资质方向。 */
   function interpretServices(task, policy, result) {
@@ -595,7 +718,7 @@
     if(!task.id)return '';
     const patents=rows.find(row=>row.key==='patents'&&row.metric?.have!==null&&row.metric?.have<row.metric?.need);
     const title=patents?`还差 ${patents.metric.need-patents.metric.have} 项专利，看看如何补齐`:'专利撰写服务';
-    return `<section class="interpret-services" aria-labelledby="interpret-services-title"><div class="interpret-section-heading"><span>03</span><div><h3 id="interpret-services-title">${esc(title)}</h3><p>万大圣 · 专业知识产权服务</p></div><button type="button" class="text-button interpret-service-refresh" data-action="interpret-services-refresh">${icon('refresh')} 换一批</button></div><div class="interpret-service-grid" aria-live="polite">${serviceCards()}</div></section>`;
+    return serviceSection('patent', { num: '03', title, sub: '万大圣 · 专业知识产权服务', cards: serviceCards(), pages: Math.ceil(patentServices.length / serviceBatchSize) });
   }
   const hasNoTemplate = policy => policy?.application?.noTemplate === true;
   function interpretFooter(task,policy) {
@@ -1134,7 +1257,7 @@
     closeDrawer();
     const policy = publicPolicies().find(item => item.id === opener.dataset.policy);
     if (!policy) return;
-    serviceBatch = 0;
+    Object.keys(serviceBatches).forEach(key => { serviceBatches[key] = 0; });
     interpretEditKey = '';
     // 记下正在看的政策，之后在对话里追问就按它回答。
     if (task.id) S().updateTask(task.id, { interpretPolicyId: policy.id });
@@ -1229,17 +1352,21 @@
     if (!['service-dismiss','interpret-services-refresh','interpret-todo', 'interpret-apply', 'portrait-edit', 'portrait-cancel', 'portrait-save', 'home-intake-finish', 'intake-edit', 'intake-start', 'intake-remove-file', 'intake-result', 'match-chat', 'match-apply', 'match-drawer', 'match-drawer-close', 'nohit-pick', 'nohit-confirm', 'nohit-service'].includes(action)) return false;
     if (action === 'service-dismiss') {
       dismissedServices.add(target.dataset.kind);
-      document.querySelectorAll(`.svc-rec[data-service-kind="${target.dataset.kind}"]`).forEach(node => node.remove());
+      document.querySelectorAll(`.svc-section[data-service-kind="${target.dataset.kind}"]`).forEach(node => node.remove());
       window.PolicyUI.toast('本次对话不再推荐这类服务。');
       return true;
     }
     if (action === 'match-drawer-close') { closeDrawer(); return true; }
     if (action === 'home-intake-finish') { finishHomeIntake(); return true; }
     if (action === 'interpret-services-refresh') {
-      serviceBatch = (serviceBatch + 1) % Math.ceil(patentServices.length / serviceBatchSize);
-      document.querySelector('.interpret-service-grid').innerHTML = serviceCards();
+      const kind = target.dataset.kind || 'patent';
+      const total = kind === 'patent' ? Math.ceil(patentServices.length / serviceBatchSize) : Math.ceil((serviceCatalog[kind] || []).length / serviceBatchSize);
+      serviceBatches[kind] = ((serviceBatches[kind] || 0) + 1) % total;
+      const html = kind === 'patent' ? serviceCards() : kindCards(kind);
+      document.querySelectorAll(`.svc-section[data-service-kind="${kind}"] .interpret-service-grid`).forEach(grid => { grid.innerHTML = html; });
       return true;
     }
+
     if(action==='interpret-todo') {
       const task=S().getTask(target.dataset.task),policy=publicPolicies().find(item=>item.id===target.dataset.policy);
       if(!task){closeDrawer();window.PolicyUI.navigate('dashboard');window.PolicyUI.toast('先填写企业名称，再补充企业资料。');return true;}

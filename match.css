@@ -542,22 +542,21 @@
 .portrait-notfound{margin:0 0 8px;padding:6px 10px;border-radius:8px;background:#fff8ea;color:#7a4b06;font-size:12px;line-height:1.5}
 
 /* 服务推荐卡和诊断卡（2026-11-10） */
-.svc-rec{display:flex;align-items:center;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;margin-top:12px;padding:12px 14px;border:1px solid #f1d9b5;border-radius:12px;background:#fffaf2}
-.svc-rec-copy{display:grid;gap:2px;min-width:0;flex:1 1 260px}
-.svc-rec-tag{font-size:11px;font-weight:600;color:#b45309}
-.svc-rec-copy strong{font-size:14px;line-height:1.5;color:#3d2a12}
-.svc-rec-copy p{margin:0;font-size:12px;line-height:1.6;color:#6b5a44}
-.svc-rec-actions{display:flex;align-items:center;gap:10px}
-.svc-rec .svc-rec-go{min-height:34px;padding:0 13px;border:1px solid #e3b679;border-radius:8px;background:#fff;box-shadow:none;color:#9a4b0b;font-size:12px;font-weight:600;text-decoration:none}
-.svc-rec .svc-rec-go:hover{background:#fff1dc}
-.svc-rec-dismiss{font-size:12px;color:#7a8797}
 .diag-card{margin-top:14px;padding:14px 16px;border:1px solid #e3e9f1;border-radius:12px;background:#fff}
 .diag-card header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.diag-card h3{margin:0;font-size:14px;color:#1f2a3a}
+.diag-card header h3{margin:0;font-size:14px;color:#1f2a3a}
 .diag-card header small{font-size:11px;color:#7a8797}
 .diag-card ul{display:grid;gap:6px;margin:10px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.6;color:#445267}
 .diag-card li b{display:inline-block;min-width:4.5em;margin-right:8px;font-weight:600}
 .diag-card li.is-risk b{color:#c2410c}
 .diag-card li.is-ok b{color:#15803d}
 .diag-card li.is-na b{color:#7a8797}
-@media (max-width:640px){.svc-rec .svc-rec-go,.svc-rec-dismiss{min-height:44px}}
+
+/* 服务推荐统一样式：沿用专利服务区块（2026-11-10） */
+.svc-section .interpret-section-heading{align-items:center}
+.svc-section .interpret-service-refresh{margin-left:auto}
+.svc-dismiss{flex:none;font-size:12px;color:#7a8797}
+.svc-section .interpret-service-refresh+.svc-dismiss{margin-left:12px}
+.svc-section .interpret-section-heading>div+.svc-dismiss{margin-left:auto}
+.diag-card .svc-section,.review-ai+.svc-section,.guidance-detail+.svc-section{margin-top:16px;padding-top:14px;border-top:1px solid #e6ebf2}
+@media (max-width:640px){.svc-dismiss,.svc-section .interpret-service-refresh{min-height:44px}}
