@@ -48,7 +48,7 @@
     };
   }
 
-  const intakeStages = ['fields', 'upload', 'ready'];
+  const intakeStages = ['fields', 'upload', 'ready', 'confirm', 'blocked'];
   function normalizeIntake(value) {
     if (!plain(value) || !intakeStages.includes(value.stage)) return null;
     const answers = plain(value.answers) ? Object.fromEntries(Object.entries(value.answers).filter(([, answer]) => typeof answer === 'string').map(([key, answer]) => [text(key, '', 50), text(answer, '', 100)])) : {};

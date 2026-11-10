@@ -94,7 +94,7 @@
     const answers=task.intake?.answers||{};
     // 地区和行业来自企业数据，有才显示。
     const region=task.company.region||answers.region,industry=task.company.industry||answers.industry;
-    const rows=[['企业名称',task.company.name],...(region?[['所在地区',region]]:[]),...(industry?[['所属行业',industry]]:[]),...(window.PolicyMatch?.companyRows(task)||[]),...(window.PolicyMatch?.questions||[]).map(question=>[question.label,answers[question.key]])];
+    const rows=window.PolicyMatch?.portraitRows(task)||[['企业名称',task.company.name]];
     const known=rows.filter(([,value])=>value).length;
     const open=window.PolicyMatch?.openCount(task);
     const sources=[...task.sources].sort((a,b)=>Number(a.provided)-Number(b.provided));
@@ -149,7 +149,7 @@
   /* 还没有企业时的右栏：和项目页同样的结构，内容都是待补充。 */
   function emptyContext() {
     const E=U().escape,I=U().icon;
-    const rows=['企业名称',...(window.PolicyMatch?.questions||[]).map(question=>question.label)];
+    const rows=window.PolicyMatch?.PORTRAIT_LABELS||['企业名称'];
     const outputs=[['候选政策清单','查找适用政策后生成'],['申报材料','确认材料后生成'],['办理指引','明确申报政策后查看']];
     return `<aside class="workspace-context" tabindex="0" aria-label="企业画像与输出内容"><div class="workspace-context-index"><section class="context-card workspace-summary"><header class="context-card-heading"><h2>企业画像</h2><span>已了解 0/${rows.length}</span></header><dl class="workspace-portrait">${rows.map(label=>`<div><dt>${E(label)}</dt><dd class="is-empty">待补充</dd></div>`).join('')}</dl></section><section class="context-card workspace-result"><header class="context-card-heading"><h2>输出内容</h2><span>0/${outputs.length}</span></header><div class="workspace-output-list">${outputs.map(([title,detail])=>`<button type="button" class="workspace-output-item" disabled>${I('file')}<span><strong>${E(title)}</strong><small>${E(detail)}</small></span><span class="output-state">待生成</span></button>`).join('')}</div></section></div></aside>`;
   }
