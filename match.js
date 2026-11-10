@@ -321,7 +321,7 @@
       ...(submit ? submit.steps : []).map(step => ({ title: step })),
       { title: '保存回执', detail: '提交后保存系统的回执，以便后续查询。' },
     ];
-    return `<div class="guidance-detail"><h2 class="sr-only">到官方系统提交</h2><section class="drawer-summary guidance-summary"><p>${esc(policy.title)}</p><dl>${facts.map(([label, value]) => `<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></section>${hasNoTemplate(policy) ? `<section class="guidance-materials"><h3>材料清单</h3><p>这项政策没有申报模板，不生成初稿，按清单准备。</p><ul>${policy.application.checklist.filter(item => item.kind !== 'condition').map(item => `<li><strong>${esc(item.label)}</strong>${item.note ? `<small>${esc(item.note)}</small>` : ''}</li>`).join('')}</ul></section>` : ''}<ol class="guidance-timeline">${steps.map(step => `<li${step.detail ? '' : ' class="is-plain"'}><div><strong>${esc(step.title)}</strong>${step.detail ? `<small>${esc(step.detail)}</small>` : ''}</div>${step.action || ''}</li>`).join('')}</ol>${jumpLog(task.id, policy.id)}<p class="guidance-note">登录和提交要你本人在官方系统完成。</p>${applicationGuidance(policy) ? `<div class="guidance-policy-note">${applicationGuidance(policy)}</div>` : ''}</div>`;
+    return `<div class="guidance-detail"><h2 class="sr-only">到官方系统提交</h2><section class="drawer-summary guidance-summary"><p>${esc(policy.title)}</p><dl>${facts.map(([label, value]) => `<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></section>${hasNoTemplate(policy) ? `<section class="guidance-materials"><h3>材料清单</h3><p>这项政策没有申报模板，不生成初稿，按清单准备。</p><ul>${policy.application.checklist.filter(item => item.kind !== 'condition').map(item => `<li><strong>${esc(item.label)}</strong>${item.note ? `<small>${esc(item.note)}</small>` : ''}</li>`).join('')}</ul></section>` : ''}<ol class="guidance-timeline">${steps.map(step => `<li${step.detail ? '' : ' class="is-plain"'}><div><strong>${esc(step.title)}</strong>${step.detail ? `<small>${esc(step.detail)}</small>` : ''}</div>${step.action || ''}</li>`).join('')}</ol>${jumpLog(task.id, policy.id)}<p class="guidance-note">登录和提交要你本人在官方系统完成。</p>${applicationGuidance(policy) ? `<div class="guidance-policy-note">${applicationGuidance(policy)}</div>` : ''}</div>` + (jumpEvents().some(item => item.taskId === task.id && item.policyId === policy.id) ? '' : serviceRec('handling'));
   }
 
   /* 公开政策的详情：和政策列表用同一张结构化卡片。 */
@@ -389,9 +389,17 @@
   const suggestPause = (result, policy) => Boolean(result) && result.score !== null && result.score < GAP_LINE && statusOf(policy) === 'open';
   const pauseTag = '<em class="policy-pause">条件差距较大，建议先补齐</em>';
 
+  /* 预估补贴：只用政策写明的金额或上限，没写的不估算，显示“以原文为准”。 */
+  function subsidyStat(policy) {
+    const s = policy.subsidy;
+    return s ? `<span class="policy-stat policy-subsidy"><strong>${s.prefix ? `<small class="policy-stat-prefix">${esc(s.prefix)}</small>` : ''}${esc(s.value)}<small>${esc(s.unit)}</small></strong><small>预估补贴</small></span>` : `<span class="policy-stat policy-subsidy is-text"><strong>以原文为准</strong><small>预估补贴</small></span>`;
+  }
   function scoreBadge(task, policy) {
     const result = policyScore(task, policy);
-    return result ? `<span class="policy-score${result.score === null || result.score <= 10 ? ' is-text' : ''}"><strong>${result.score !== null && result.score > 10 ? `${result.shown}<small>分</small>` : result.level}</strong><small>预估匹配分</small>${suggestPause(result, policy) ? pauseTag : ''}</span>` : '';
+    return `<span class="policy-stats">${result ? scoreStat(result, policy, false) : ''}${subsidyStat(policy)}</span>${suggestPause(result, policy) ? '<em class="policy-pause is-card">条件差距较大，建议先补齐</em>' : ''}`;
+  }
+  function scoreStat(result, policy, withPause = true) {
+    return result ? `<span class="policy-stat policy-score${result.score === null || result.score <= 10 ? ' is-text' : ''}"><strong>${result.score !== null && result.score > 10 ? `${result.shown}<small>分</small>` : result.level}</strong><small>预估匹配分</small>${withPause && suggestPause(result, policy) ? pauseTag : ''}</span>` : '';
   }
 
   function scoreText(task, policy) {
@@ -423,11 +431,24 @@
     数字化改造: [{ key: 'copyrights', label: '软件著作权', need: 1, unit: '个' }, { key: 'rdStaff', label: '研发人员', need: 5, unit: '人' }],
     金融支持: [{ key: 'patents', label: '专利', need: 1, unit: '个' }],
   };
+  /* 查不到工商信息的企业：演示时用这个名字触发。接口字段全部留空，只用用户填写的内容。 */
+  const NOT_FOUND_NAMES = ['张政奥'];
+  /* 合规风险示例：这个名字的企业带一条经营异常，用来演示诊断卡和信用修复推荐。 */
+  const RISK_NAMES = { '示例风险科技有限公司': [['经营异常', '1 条，列入原因：通过登记的住所无法联系']] };
+  const companyRisks = task => RISK_NAMES[(task?.company?.name || '').trim()] || [];
+  function diagnosisCard(task) {
+    if (companyNotFound(task)) return '';
+    const risks = companyRisks(task);
+    const riskRows = risks.length ? risks.map(([label, detail]) => `<li class="is-risk"><b>${esc(label)}</b>${esc(detail)}</li>`).join('') : '<li class="is-ok"><b>未发现</b>经营异常、行政处罚、被执行、失信、限高</li>';
+    return `<section class="diag-card" aria-labelledby="diag-title"><header><h3 id="diag-title">企业诊断 · 合规风险</h3><small>数据依据：企业地图接口</small></header><ul>${riskRows}<li class="is-na"><b>暂缺</b>证照、用工、财税（接口没有这类数据）</li></ul>${risks.length ? serviceRec('risk') : ''}</section>`;
+  }
+  const companyNotFound = task => NOT_FOUND_NAMES.includes((task?.company?.name || '').trim());
+  const notFoundNotice = task => companyNotFound(task) ? `<div class="company-notfound" role="status"><p><strong>没有查到「${esc(task.company.name)}」的工商信息。</strong>请核对企业全称是否和营业执照一致。下面的结果只按您填写的信息匹配，专利、软著、研发人员需要您补充。</p><button type="button" class="text-button" data-action="portrait-edit" data-task="${esc(task.id)}">修改企业名称或补充信息</button></div>` : '';
   function mockCompanyData(task) {
     const name = task?.company?.name;
     if (!name) return null;
     const hash = [...name].reduce((sum, char) => (sum * 31 + char.codePointAt(0)) % 9973, 7);
-    const defaults={patents:hash%4,copyrights:(hash>>2)%5,rdStaff:4+(hash>>3)%15};
+    const defaults=companyNotFound(task)?{patents:null,copyrights:null,rdStaff:null}:{patents:hash%4,copyrights:(hash>>2)%5,rdStaff:4+(hash>>3)%15};
     const answers=answersOf(task);
     return Object.fromEntries(Object.entries(defaults).map(([key,value])=>{
       const field=`metric_${key}`;
@@ -438,7 +459,7 @@
   }
   const companyRows = task => {
     const data = mockCompanyData(task);
-    return data ? [['专利数量', data.patents===null?'待核实':`${data.patents} 个`], ['软件著作权', data.copyrights===null?'待核实':`${data.copyrights} 个`], ['研发人员', data.rdStaff===null?'待核实':`${data.rdStaff} 人`]] : [];
+    return data ? [['专利数量', data.patents===null?(companyNotFound(task)?'':'待核实'):`${data.patents} 个`], ['软件著作权', data.copyrights===null?(companyNotFound(task)?'':'待核实'):`${data.copyrights} 个`], ['研发人员', data.rdStaff===null?(companyNotFound(task)?'':'待核实'):`${data.rdStaff} 人`]] : [];
   };
   function policyMetrics(task, policy) {
     const data = mockCompanyData(task);
@@ -530,6 +551,33 @@
   let serviceBatch = 0;
   const serviceCards = () => patentServices.slice(serviceBatch*serviceBatchSize,(serviceBatch+1)*serviceBatchSize).map(service=>`<a class="interpret-service-card is-marketplace" href="${patentServiceDestination}" target="_blank" rel="noopener noreferrer"><img class="interpret-service-thumbnail" src="${esc(service.cover)}" alt="" width="76" height="76"><div class="interpret-service-copy"><h4>${esc(service.name)}</h4><p>${esc(service.description)}</p><span class="interpret-service-entry">查看服务 ${icon('arrow')}</span></div></a>`).join('');
   /* AI 建议：学芝麻分的提分逻辑，说清现在多少、做哪一步、能提到多少。数字只来自对照表的分项差额；有专利缺口时优先推专利服务。 */
+  /* 服务推荐（PRD 8.1.6）：按差距类型推荐万大圣服务。点“了解服务”新窗口打开官网；点“暂不需要”后本次会话同类不再出现。 */
+  const SERVICE_SITE = 'https://www.wdsheng.com';
+  const serviceKinds = {
+    qualification: { title: '离政策要求只差一点', service: '资质认定辅导', desc: '协助梳理高新、专精特新等认定条件，补齐差的那一项。' },
+    rdFee: { title: '研发费用归集不规范会影响认定', service: '财税代账、研发费用归集', desc: '按政策口径整理研发费用台账，减少认定时被核减。' },
+    material: { title: '材料问题较多', service: '申报材料代写', desc: '由专业顾问按政策要点改写材料，减少反复补正。' },
+    handling: { title: '申报有困难？', service: '专业申报服务', desc: '顾问协助在官方系统填报和上传，登录和提交仍由您本人完成。' },
+    risk: { title: '经营异常会影响申报资格', service: '合规、信用修复', desc: '协助处理经营异常、行政处罚的移出和信用修复。' },
+  };
+  const dismissedServices = new Set();
+  function serviceRec(kind) {
+    const item = serviceKinds[kind];
+    if (!item || dismissedServices.has(kind)) return '';
+    return `<aside class="svc-rec" data-service-kind="${kind}" aria-label="服务推荐"><div class="svc-rec-copy"><span class="svc-rec-tag">万大圣 · 服务推荐</span><strong>${esc(item.title)}${/[？?]$/.test(item.title) ? '' : '，'}了解${esc(item.service)}</strong><p>${esc(item.desc)}</p></div><div class="svc-rec-actions"><a class="button button-secondary svc-rec-go" href="${SERVICE_SITE}" target="_blank" rel="noopener noreferrer">了解服务 ${icon('arrow')}</a><button type="button" class="text-button svc-rec-dismiss" data-action="service-dismiss" data-kind="${kind}">暂不需要</button></div></aside>`;
+  }
+  const rdLowOptions = ['2%以下', '2%-3%'];
+  /* 资质差一点：量化条件只差 1 项，且只差 1～2 个（PRD 8.2.3“差一点”）。研发费用不达标：研发费占比选了 3% 以下，政策是研发或资质方向。 */
+  function interpretServices(task, policy, result) {
+    if (!task.id || statusOf(policy) !== 'open') return '';
+    const gaps = (result?.rows || []).filter(row => row.kind === '量化条件' && row.metric?.have !== null && row.status === 'missing');
+    const rd = answersOf(task).rd;
+    const out = [];
+    // 差的是专利、软著时走知识产权推荐（下方专利服务），这里不重复。
+    if (gaps.length === 1 && !['patents', 'copyrights'].includes(gaps[0].key) && gaps[0].metric.need - gaps[0].metric.have <= 2) out.push(serviceRec('qualification'));
+    if (rdLowOptions.includes(rd) && ['研发支持', '资质培育'].includes(policy.supportType)) out.push(serviceRec('rdFee'));
+    return out.join('');
+  }
   function adviceMarkup(policy,result) {
     if(!result||statusOf(policy)!=='open')return '';
     // 地区、行业不符靠补资料改变不了；材料不计入匹配分。只从量化条件里挑一步。
@@ -615,7 +663,7 @@
     const result=policyScore(task,policy),rows=result?.rows||comparisonRows(task,policy),materials=rows.find(row=>row.key==='materials');
     const pending=rows.filter(row=>row.status!=='ready'&&row.key!=='materials').length;
     const facts=[['支持方向',policy.supportType],['适用地区',policy.region],['申报时间',windowText(policy)],['发布部门',policy.agency]];
-    return `<div class="policy-review"><section class="interpret-overview"><div class="interpret-eyebrow">01 / 了解政策</div><h3><a class="interpret-title" href="${esc(policy.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(policy.title)} ${icon('arrow')}</a></h3><p class="interpret-summary">${esc(policy.summary)}</p><div class="interpret-summary-grid"><dl class="interpret-facts">${facts.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><div class="interpret-score-result"><span>预估匹配分</span><strong data-total-score="${result?.score??''}">${result?result.level:'—'}</strong><div><b>${pending}</b> 项可能不符或未知</div>${suggestPause(result, policy) ? pauseTag : ''}<small>${{ open: '地区、行业只做准入判断，未知不过滤；量化条件按现有 ÷ 要求计算；材料不计入匹配分', notice: '暂未开放申报，可以提前准备', closed: '本期已截止，无法申报' }[statusOf(policy)]}</small></div></div>${conditionsNotice(policy)}</section><section class="interpret-comparison" aria-labelledby="comparison-title"><div class="interpret-section-heading"><span>02</span><div><h3 id="comparison-title">逐项对照，看看还差什么</h3><p>核对企业现状，再准备对应资料。</p></div></div><div class="interpret-table-scroll" tabindex="0" role="region" aria-label="政策条件对照表"><table class="interpret-table"><thead><tr><th scope="col">对照维度</th><th scope="col">政策要求</th><th scope="col">企业现状</th><th scope="col">条件类型</th><th scope="col">操作</th></tr></thead><tbody>${rows.map(row=>comparisonRow(task,policy,row)).join('')}</tbody></table></div><div id="interpret-supplement" aria-live="polite"></div>${policy.applicationTimeNote?`<p class="interpret-time-note">${esc(policy.applicationTimeNote)}</p>`:''}</section>${adviceMarkup(policy,result)}${recommendationMarkup(task,policy,rows)}</div>`;
+    return `<div class="policy-review"><section class="interpret-overview"><div class="interpret-eyebrow">01 / 了解政策</div><h3><a class="interpret-title" href="${esc(policy.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(policy.title)} ${icon('arrow')}</a></h3><p class="interpret-summary">${esc(policy.summary)}</p><div class="interpret-summary-grid"><dl class="interpret-facts">${facts.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><div class="interpret-score-result"><span>预估匹配分</span><strong data-total-score="${result?.score??''}">${result?result.level:'—'}</strong><div><b>${pending}</b> 项可能不符或未知</div>${suggestPause(result, policy) ? pauseTag : ''}<small>${{ open: '地区、行业只做准入判断，未知不过滤；量化条件按现有 ÷ 要求计算；材料不计入匹配分', notice: '暂未开放申报，可以提前准备', closed: '本期已截止，无法申报' }[statusOf(policy)]}</small></div></div>${conditionsNotice(policy)}</section><section class="interpret-comparison" aria-labelledby="comparison-title"><div class="interpret-section-heading"><span>02</span><div><h3 id="comparison-title">逐项对照，看看还差什么</h3><p>核对企业现状，再准备对应资料。</p></div></div><div class="interpret-table-scroll" tabindex="0" role="region" aria-label="政策条件对照表"><table class="interpret-table"><thead><tr><th scope="col">对照维度</th><th scope="col">政策要求</th><th scope="col">企业现状</th><th scope="col">条件类型</th><th scope="col">操作</th></tr></thead><tbody>${rows.map(row=>comparisonRow(task,policy,row)).join('')}</tbody></table></div><div id="interpret-supplement" aria-live="polite"></div>${policy.applicationTimeNote?`<p class="interpret-time-note">${esc(policy.applicationTimeNote)}</p>`:''}</section>${adviceMarkup(policy,result)}${interpretServices(task,policy,result)}${recommendationMarkup(task,policy,rows)}</div>`;
   }
 
   function updateInterpretDrawer(task,policy) {
@@ -814,7 +862,9 @@
     const content = review.unreadable ? '<p class="review-ai-empty">这份文件读不到文字。上传 Word（.docx）或文本文件后，才能给出建议。</p>' : items.length ? `<ol class="review-ai-list">${rows}</ol>` : '<p class="review-ai-empty">这份材料没有发现需要修改的地方。</p>';
     const download = items.length ? `<button type="button" class="review-ai-download" data-action="mat-advice-download" ${attrs}>${icon('download')}下载</button>` : '';
     const ai = `<section class="review-ai" aria-label="AI 建议"><header class="review-ai-head"><span class="review-ai-mark" aria-hidden="true">${icon('spark')}</span><h3>AI 建议</h3>${items.length ? `<small>${items.length} 条</small>` : ''}</header><div class="review-ai-scroll" tabindex="0">${content}</div>${download}</section>`;
-    return file + differences + ai;
+    const expects = publicPolicies().find(item => item.id === task.policyId)?.application?.checklist.find(entry => `${task.policyId}-${entry.id}` === source.id)?.expects || [];
+    const many = !review.unreadable && ((expects.length && review.missing.length * 2 > expects.length) || items.length >= 3);
+    return file + differences + ai + (many ? serviceRec('material') : '');
   }
 
   /* 抽屉里重新上传后，内容跟着换。 */
@@ -1060,7 +1110,7 @@
     matches.sort((x, y) => statusOrder[x.status] - statusOrder[y.status] || (policyScore(task, y.policy)?.score ?? -1) - (policyScore(task, x.policy)?.score ?? -1));
     const pickIndex = matches.findIndex(item => item.status === 'open' && (policyScore(task, item.policy)?.score ?? -1) >= FIRST_PICK_MIN);
     const cards = matches.map((item, index) => compactCard(task, item, index === pickIndex)).join('');
-    const card = `<div class="intake-card match-result${onlyOpen ? ' only-open' : ''}"><div class="match-result-bar"><p id="match-result-heading" class="match-result-heading" tabindex="-1">有 ${openCount} 项政策正在申报</p>${onlyOpenToggle()}</div>${typeFilter(matches)}<div class="match-policy-grid">${cards}</div></div>`;
+    const card = `<div class="intake-card match-result${onlyOpen ? ' only-open' : ''}">${notFoundNotice(task)}<div class="match-result-bar"><p id="match-result-heading" class="match-result-heading" tabindex="-1">有 ${openCount} 项政策正在申报</p>${onlyOpenToggle()}</div>${typeFilter(matches)}<div class="match-policy-grid">${cards}</div>${diagnosisCard(task)}</div>`;
     return assistantBubble(`「${task.company.name}」比对完了。`, card, 'match');
   }
 
@@ -1176,7 +1226,13 @@
 
   function handleClick(target) {
     const { action } = target.dataset;
-    if (!['interpret-services-refresh','interpret-todo', 'interpret-apply', 'portrait-edit', 'portrait-cancel', 'portrait-save', 'home-intake-finish', 'intake-edit', 'intake-start', 'intake-remove-file', 'intake-result', 'match-chat', 'match-apply', 'match-drawer', 'match-drawer-close', 'nohit-pick', 'nohit-confirm', 'nohit-service'].includes(action)) return false;
+    if (!['service-dismiss','interpret-services-refresh','interpret-todo', 'interpret-apply', 'portrait-edit', 'portrait-cancel', 'portrait-save', 'home-intake-finish', 'intake-edit', 'intake-start', 'intake-remove-file', 'intake-result', 'match-chat', 'match-apply', 'match-drawer', 'match-drawer-close', 'nohit-pick', 'nohit-confirm', 'nohit-service'].includes(action)) return false;
+    if (action === 'service-dismiss') {
+      dismissedServices.add(target.dataset.kind);
+      document.querySelectorAll(`.svc-rec[data-service-kind="${target.dataset.kind}"]`).forEach(node => node.remove());
+      window.PolicyUI.toast('本次对话不再推荐这类服务。');
+      return true;
+    }
     if (action === 'match-drawer-close') { closeDrawer(); return true; }
     if (action === 'home-intake-finish') { finishHomeIntake(); return true; }
     if (action === 'interpret-services-refresh') {
@@ -1329,5 +1385,5 @@
     if (link && !link.isConnected) window.open(link.href, '_blank', 'noopener');
   }, true);
 
-  window.PolicyMatch = Object.freeze({ resetGuest, noTemplateNotice, quickIntakeMarkup, assemblyPicker, refreshMaterialReview, forgetUpload, closeDrawer, handleClick, intakeActive, intakeMarkup, matchChatMarkup, matchPending, openCount, composerAttach, questions, understanding, beginPortrait, portraitLoading, portraitEditing, portraitEditor, scoreText, openMaterialReview, reviewMaterial, materialAdvice, maskedHtml, companyRows, policyMetrics, openHomeIntake, homeIntakeMarkup, rememberUpload, adoptUploads, uploadsMarkup, interpretMarkup, interpretPicking, guestMarkup, guestAsk, finishGuest, applicationIntro, applicationNote, guidanceMarkup, guidanceDetail, policyDetail, versionReview });
+  window.PolicyMatch = Object.freeze({ companyNotFound, resetGuest, noTemplateNotice, quickIntakeMarkup, assemblyPicker, refreshMaterialReview, forgetUpload, closeDrawer, handleClick, intakeActive, intakeMarkup, matchChatMarkup, matchPending, openCount, composerAttach, questions, understanding, beginPortrait, portraitLoading, portraitEditing, portraitEditor, scoreText, openMaterialReview, reviewMaterial, materialAdvice, maskedHtml, companyRows, policyMetrics, openHomeIntake, homeIntakeMarkup, rememberUpload, adoptUploads, uploadsMarkup, interpretMarkup, interpretPicking, guestMarkup, guestAsk, finishGuest, applicationIntro, applicationNote, guidanceMarkup, guidanceDetail, policyDetail, versionReview });
 })();

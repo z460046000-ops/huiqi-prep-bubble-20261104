@@ -7,11 +7,11 @@
   const industries = ['物流行业','人工智能','金融行业','软件信息','先进制造','新能源','生命健康','现代服务'];
   const supportTypes = [...new Set(policies.map(item=>item.supportType))];
   const experts = [
-    { id: 'enterprise-specialist', title: '企业资料助理', headline: '先把企业情况理清楚', description: '整理地区、行业、项目与资质信息，标出还需要补充的资料。', deliverables: ['企业画像', '资料缺口'], portraitIndex: 0, serviceId: 'profile' },
-    { id: 'policy-matcher', title: '政策匹配顾问', headline: '找到值得进一步核对的政策', description: '围绕企业画像筛选候选项目，把地区、行业与项目方向的匹配原因说清楚。', deliverables: ['候选政策', '匹配原因'], portraitIndex: 1, serviceId: 'search' },
-    { id: 'policy-interpreter', title: '政策解读专家', headline: '把申报条件讲明白', description: '拆解适用条件、申报时间与材料要求，留下需要人工确认的问题。', deliverables: ['条件摘要', '材料清单'], portraitIndex: 2, serviceId: 'interpret' },
-    { id: 'application-adviser', title: '申报诊断顾问', headline: '还差什么，先补什么', description: '对照现有资料查找缺口，区分资料缺失、信息待核实与条件不满足。', deliverables: ['差距诊断', '补充建议'], portraitIndex: 3, serviceId: 'diagnosis' },
-    { id: 'material-editor', title: '材料组稿专员', headline: '把已有资料整理进模板', description: '引用企业提供的资料组织章节，缺失内容明确留待补充，并保存修改版本。', deliverables: ['有来源的草稿', '版本对比'], portraitIndex: 4, serviceId: 'assembly' },
+    { id: 'enterprise-specialist', title: '企业画像专员', headline: '先把企业情况理清楚', description: '整理地区、行业、项目与资质信息，标出还需要补充的资料。', deliverables: ['企业画像', '资料缺口'], portraitIndex: 0, serviceId: 'profile' },
+    { id: 'policy-matcher', title: '政策匹配与诊断专员', headline: '找到值得进一步核对的政策', description: '围绕企业画像筛选候选项目，把地区、行业与项目方向的匹配原因说清楚。', deliverables: ['候选政策', '匹配原因'], portraitIndex: 1, serviceId: 'search' },
+    { id: 'policy-interpreter', title: '政策解读专员', headline: '把申报条件讲明白', description: '拆解适用条件、申报时间与材料要求，留下需要人工确认的问题。', deliverables: ['条件摘要', '材料清单'], portraitIndex: 2, serviceId: 'interpret' },
+    { id: 'application-adviser', title: '政策匹配与诊断专员', headline: '还差什么，先补什么', description: '对照现有资料查找缺口，区分资料缺失、信息待核实与条件不满足。', deliverables: ['差距诊断', '补充建议'], portraitIndex: 3, serviceId: 'diagnosis' },
+    { id: 'material-editor', title: '申报材料专员', headline: '把已有资料整理进模板', description: '引用企业提供的资料组织章节，缺失内容明确留待补充，并保存修改版本。', deliverables: ['有来源的草稿', '版本对比'], portraitIndex: 4, serviceId: 'assembly' },
     { id: 'submission-guide', title: '办理指引助手', headline: '提交前，再逐项核对', description: '整理办理步骤与提交前检查事项，将需要企业确认的内容单独列出。', deliverables: ['办理步骤', '核对清单'], portraitIndex: 5, serviceId: 'guidance' },
   ];
   experts.forEach(expert => { expert.portraitIndex = window.PolicyPersonas.get(expert.serviceId).index; });

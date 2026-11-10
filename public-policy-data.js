@@ -90,6 +90,7 @@
     {
       id: 'digital-template-missing-demo', projectId: 'digital-template-missing-demo', batchId: '2026',
       title: '中小企业数字化改造补贴申报（示例：模板暂未收录）',
+      subsidy: { prefix: '最高', value: '50', unit: '万' },
       region: '全国', industries: ['软件信息', '先进制造', '现代服务'], supportType: '数字化改造',
       publishedAt: '2026-10-25', issuedAt: '2026-10-22', applicationStart: '2026-10-25', applicationEnd: '2027-01-31',
       category: '申报通知', agency: '示例主管部门',
@@ -117,6 +118,7 @@
     {
       id: 'ne-no-template-demo', projectId: 'ne-no-template-demo', batchId: '2026',
       title: '新能源装备技术改造补贴申报（示例）',
+      subsidy: { prefix: '最高', value: '100', unit: '万' },
       region: '全国', industries: ['新能源'], supportType: '财政补贴',
       publishedAt: '2026-10-20', issuedAt: '2026-10-18', applicationStart: '2026-10-20', applicationEnd: '2027-03-31',
       category: '申报通知', agency: '示例主管部门',
@@ -176,6 +178,7 @@
     {
       id: 'sz-ai-corpus-voucher-2026', projectId: 'sz-ai-corpus-voucher', batchId: '2026',
       title: '2026年深圳市人工智能语料券专项资金',
+      subsidy: { prefix: '最高', value: '200', unit: '万' },
       region: '广东省', industries: ['软件信息'], supportType: '研发支持',
       publishedAt: '2026-03-31', applicationStart: '2026-09-01', applicationEnd: '2026-11-10',
       deadlineAt: '2026-11-10T18:00:00+08:00', category: '申报通知', agency: '深圳市政务服务和数据管理局',
